@@ -1,0 +1,76 @@
+package de.nniikkoollaaii;
+
+import com.azure.core.credential.AccessToken;
+import org.apache.kafka.common.security.oauthbearer.OAuthBearerToken;
+import org.apache.kafka.common.security.oauthbearer.internals.secured.BasicOAuthBearerToken;
+import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+
+import static org.apache.kafka.common.security.oauthbearer.internals.secured.LoginAccessTokenValidator.EXPIRATION_CLAIM_NAME;
+import static org.apache.kafka.common.security.oauthbearer.internals.secured.LoginAccessTokenValidator.ISSUED_AT_CLAIM_NAME;
+
+public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
+
+    private static final Logger log = LoggerFactory.getLogger(AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.class);
+    public static final String scopeClaimName = "scope";
+    public static final String subClaimName = "sub";
+    public static OAuthBearerToken map(AccessToken azureIdentityAccessToken){
+        // Parse the JWT claims to set required values on Kafka Client OAuthBearer Token Object
+        log.trace("Map Azure Identity Access Token to Kafka Client OAuthBearerToken");
+
+        // Construct an SOSE JWT Consumer to parse the JWT
+        JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+                .setSkipSignatureVerification() //already checked by Azure Identity SDK
+                .build();
+
+        //Parse it
+        JwtClaims claims =  null;
+        try {
+            claims = jwtConsumer.processToClaims(azureIdentityAccessToken.getToken());
+        } catch (InvalidJwtException e) {
+            throw new ValidateException(String.format("Could not validate the access token: %s", e.getMessage()), e);
+        }
+        Map<String, Object> payload = claims.getClaimsMap();
+
+        //following code is borrowed from org.apache.kafka.common.security.oauthbearer.internals.securedLoginAccessTokenValidator
+        Object scopeRaw = getClaim(payload, scopeClaimName);
+        Collection<String> scopeRawCollection;
+
+        if (scopeRaw instanceof String)
+            scopeRawCollection = Collections.singletonList((String) scopeRaw);
+        else if (scopeRaw instanceof Collection)
+            scopeRawCollection = (Collection<String>) scopeRaw;
+        else
+            scopeRawCollection = Collections.emptySet();
+
+        Number expirationRaw = (Number) getClaim(payload, EXPIRATION_CLAIM_NAME);
+        String subRaw = (String) getClaim(payload, subClaimName);
+        Number issuedAtRaw = (Number) getClaim(payload, ISSUED_AT_CLAIM_NAME);
+
+
+        // construct an Kafka Client OAuth Bearer Token and return it
+        OAuthBearerToken token = new BasicOAuthBearerToken(
+                azureIdentityAccessToken.getToken(),
+                new HashSet<>(scopeRawCollection),
+                expirationRaw.longValue(),
+                subRaw,
+                issuedAtRaw.longValue());
+        return token;
+    }
+
+    private static Object getClaim(Map<String, Object> payload, String claimName) {
+        Object value = payload.get(claimName);
+        log.debug("getClaim - {}: {}", claimName, value);
+        return value;
+    }
+}
