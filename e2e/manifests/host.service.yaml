@@ -1,0 +1,26 @@
+
+# https://github.com/kubernetes-sigs/kind/issues/1200
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: kafka
+subsets:
+  - addresses:
+      - ip: 172.17.0.1 # docker0 bridge ip
+    ports:
+      - appProtocol: tcp
+        port: 29092
+        protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+spec:
+  ports:
+    - protocol: TCP
+      appProtocol: tcp
+      port: 29092
+      targetPort: 29092
+  

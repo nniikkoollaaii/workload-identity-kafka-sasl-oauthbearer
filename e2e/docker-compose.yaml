@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+
+  broker:
+    image: confluentinc/confluent-local:latest
+    hostname: broker
+    container_name: broker
+    ports:
+      - 29092:29092
+      - 9092:9092
+      - 9093:9093
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # OAuth Configuration
+      KAFKA_SASL_SERVER_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerValidatorCallbackHandler
+      KAFKA_SASL_JAAS_CONFIG: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;
+      KAFKA_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer/openid/v1/jwks # To edit
+      KAFKA_SASL_OAUTHBEARER_SCOPE_CLAIM: scp
+      
+
+
+
+
+
+    networks: 
+      - kafka-local
+
+networks: 
+  kafka-local:

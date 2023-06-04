@@ -27,36 +27,53 @@ https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer/.well-
 https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer/openid/v1/jwks
 
 
+
 ### Create KIND cluster
 
 ```
-    export SERVICE_ACCOUNT_ISSUER="http://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer"
-    export SERVICE_ACCOUNT_KEY_FILE="$(pwd)/sa.pub"
-    export SERVICE_ACCOUNT_SIGNING_KEY_FILE="$(pwd)/sa.key"
+kind create cluster --name azure-workload-identity --image kindest/node:v1.22.4 --config-file kind.config
 ```
 
 
-```
-cat <<EOF | kind create cluster --name azure-workload-identity --image kindest/node:v1.22.4 --config=-
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  extraMounts:
-    - hostPath: ${SERVICE_ACCOUNT_KEY_FILE}
-      containerPath: /etc/kubernetes/pki/sa.pub
-    - hostPath: ${SERVICE_ACCOUNT_SIGNING_KEY_FILE}
-      containerPath: /etc/kubernetes/pki/sa.key
-  kubeadmConfigPatches:
-  - |
-    kind: ClusterConfiguration
-    apiServer:
-      extraArgs:
-        service-account-issuer: ${SERVICE_ACCOUNT_ISSUER}
-        service-account-key-file: /etc/kubernetes/pki/sa.pub
-        service-account-signing-key-file: /etc/kubernetes/pki/sa.key
-    controllerManager:
-      extraArgs:
-        service-account-private-key-file: /etc/kubernetes/pki/sa.key
-EOF
-```
+### Create Kafka cluster
+
+Docs:
+
+https://cwiki.apache.org/confluence/plugins/servlet/mobile?contentId=186877575#KIP768:ExtendSASL/OAUTHBEARERwithSupportforOIDC-BrokerConfiguration
+https://docs.confluent.io/platform/current/installation/configuration/broker-configs.html#sasl-oauthbearer-jwks-endpoint-url
+https://docs.confluent.io/platform/current/installation/docker/config-reference.html#confluent-enterprise-ak-configuration
+https://docs.confluent.io/platform/current/installation/docker/image-reference.html
+
+
+  docker-compose up
+
+### IdP configuration - here AzureAD
+
+  export APPLICATION_NAME="kafka-producer"
+  az ad sp create-for-rbac --name "${APPLICATION_NAME}"
+
+  # Get the object ID of the AAD application
+  export APPLICATION_OBJECT_ID="$(az ad app show --id ${APPLICATION_CLIENT_ID} --query id -otsv)"
+
+  cat <<EOF > params.json
+  {
+    "name": "kubernetes-federated-credential",
+    "issuer": "https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer",
+    "subject": "system:serviceaccount:test:sa-test",
+    "description": "Kubernetes service account federated credential",
+    "audiences": [
+      "api://AzureADTokenExchange"
+    ]
+  }
+  EOF
+
+  az ad app federated-credential create --id ${APPLICATION_OBJECT_ID} --parameters @params.json
+
+
+## Test producer
+
+  cd test-producer
+
+  mvn package
+
+  docker build -t de.nniikkoollaaii.kafka-producer-app:1.0.0 .
