@@ -22,7 +22,7 @@ import static org.apache.kafka.common.security.oauthbearer.internals.secured.Log
 public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
 
     private static final Logger log = LoggerFactory.getLogger(AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.class);
-    public static final String scopeClaimName = "scope";
+    public static final String scopeClaimName = "scp";
     public static final String subClaimName = "sub";
     public static OAuthBearerToken map(AccessToken azureIdentityAccessToken){
         // Parse the JWT claims to set required values on Kafka Client OAuthBearer Token Object
@@ -43,6 +43,7 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
         Map<String, Object> payload = claims.getClaimsMap();
 
         //following code is borrowed from org.apache.kafka.common.security.oauthbearer.internals.securedLoginAccessTokenValidator
+        //ToDo: make scope claim name configurable
         Object scopeRaw = getClaim(payload, scopeClaimName);
         Collection<String> scopeRawCollection;
 
@@ -54,6 +55,7 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
             scopeRawCollection = Collections.emptySet();
 
         Number expirationRaw = (Number) getClaim(payload, EXPIRATION_CLAIM_NAME);
+        //ToDo: make subject claim name configurable
         String subRaw = (String) getClaim(payload, subClaimName);
         Number issuedAtRaw = (Number) getClaim(payload, ISSUED_AT_CLAIM_NAME);
 
