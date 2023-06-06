@@ -4,23 +4,25 @@
 apiVersion: v1
 kind: Endpoints
 metadata:
-  name: kafka
+  name: broker
+  namespace: test
 subsets:
   - addresses:
       - ip: 172.17.0.1 # docker0 bridge ip
     ports:
       - appProtocol: tcp
-        port: 29092
+        port: 9092
         protocol: TCP
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka
+  name: broker
+  namespace: test
 spec:
   ports:
     - protocol: TCP
       appProtocol: tcp
-      port: 29092
-      targetPort: 29092
+      port: 9092
+      targetPort: 9092
   

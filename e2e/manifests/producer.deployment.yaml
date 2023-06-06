@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   annotations:
-    azure.workload.identity/client-id: ${APPLICATION_CLIENT_ID:-$USER_ASSIGNED_IDENTITY_CLIENT_ID}
+    azure.workload.identity/client-id: "c8843062-a9dc-49ed-8874-3b2d911ca41a"
   name: sa-test
   namespace: test
 ---
@@ -18,3 +18,6 @@ spec:
   containers:
     - image: de.nniikkoollaaii.kafka-producer-app:1.0.0
       name: producer
+      env:
+      - name: BOOTSTRAP_SERVERS
+        value: "broker:9092"

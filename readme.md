@@ -19,7 +19,12 @@ sasl.login.callback.handler.class=de.nniikkoollaaii.WorkloadIdentityLoginCallbac
 
 ## Testing 
 
-https://azure.github.io/azure-workload-identity/docs/topics/self-managed-clusters/examples/kind.html
+see [here](./e2e/readme.md)
+
+## ToDo
+
+- Fail fast when not in WI environment. Currently error buried in exception because CLIENT_ID Env is not set -> null and AzureAD rejecting token request
+
 
 ## Develop
 

@@ -1,0 +1,9 @@
+{
+  "name": "kubernetes-federated-credential",
+  "issuer": "https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer",
+  "subject": "system:serviceaccount:test:sa-test",
+  "description": "Kubernetes service account federated credential",
+  "audiences": [
+    "api://AzureADTokenExchange"
+  ]
+}
