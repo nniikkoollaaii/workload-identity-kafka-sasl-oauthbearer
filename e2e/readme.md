@@ -47,7 +47,7 @@ https://docs.confluent.io/platform/current/installation/docker/config-reference.
 https://docs.confluent.io/platform/current/installation/docker/image-reference.html
 
 
-  docker-compose up
+  docker-compose up -d
 
 ### IdP configuration - here AzureAD
 

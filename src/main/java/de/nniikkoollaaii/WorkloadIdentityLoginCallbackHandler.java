@@ -18,6 +18,7 @@ import javax.security.auth.login.AppConfigurationEntry;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
 public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbackHandler {
 
 
@@ -32,33 +33,50 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
 
     private WorkloadIdentityCredential workloadIdentityCredential;
     private TokenRequestContext tokenRequestContext;
-    private boolean isInitialized = false;
 
 
-    @Override
-    public void configure(Map<String, ?> map, String s, List<AppConfigurationEntry> list) {
+    public WorkloadIdentityLoginCallbackHandler() {
         log.trace("Starting configuration process for WorkloadIdentityLoginCallbackHandler");
 
-        // Construct a WorkloadIdentityCredential from Azure Identity SDK
+        // Construct a WorkloadIdentityCredential object from Azure Identity SDK
         String federatedTokeFilePath = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE);
-        log.debug("Federated Token File at path " + federatedTokeFilePath);
+        if (federatedTokeFilePath == null || federatedTokeFilePath.equals(""))
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE));
+        log.info("Federated Token File at path " + federatedTokeFilePath);
+        
+        String tenantId = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID);
+        if (tenantId == null || tenantId.equals(""))
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID));
+        log.info("Tenant Id " + tenantId);
+        
+        String clientId = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID);
+        if (clientId == null || clientId.equals(""))
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID));
+        log.info("Client Id " + clientId);
+        
+        
         workloadIdentityCredential = new WorkloadIdentityCredentialBuilder()
                 .tokenFilePath(federatedTokeFilePath)
+                .clientId(clientId)
+                .tenantId(tenantId)
                 .build();
+
 
         //Construct a TokenRequestContext to be used be requsting a token at runtime.
         //ToDo: make Scope configurable to get access token for e.g. App Registration Kafka Cluster
-        String defaultScope = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID) + "/.default";
-        log.debug("Scope " + defaultScope);
-        String tenantId = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID);
-        log.debug("Tenant Id " + tenantId);
+        String defaultScope =  clientId + "/.default";
+        log.info("Scope " + defaultScope);
         tokenRequestContext = new TokenRequestContext() // TokenRequestContext: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/TokenRequestContext.java
                 .addScopes(defaultScope)
                 .setTenantId(tenantId);
 
+    }
 
-        isInitialized = true;
-        log.debug("Configured WorkloadIdentityLoginCallbackHandler successfully!");
+    // This method is not called in the e2e test ... ?! Why? -> setup in constructor
+    @Override
+    public void configure(Map<String, ?> map, String s, List<AppConfigurationEntry> list) {
+        //nop required for WorkloadIdentityCredential
+        log.trace("configure WorkloadIdentityLoginCallbackHandler");
     }
 
     @Override
@@ -70,7 +88,6 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
 
     @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-        checkInitialized();
 
         for (Callback callback : callbacks) {
             if (callback instanceof OAuthBearerTokenCallback) {
@@ -82,8 +99,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     }
 
     private void handleTokenCallback(OAuthBearerTokenCallback callback) throws IOException {
-        log.trace("WorkloadIdentityLoginCallbackHandler handleTokenCallback");
-        checkInitialized();
+        log.trace("handleTokenCallback - get Token from AzureAD");
 
         // AccessToken https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/AccessToken.java
         AccessToken azureIdentityAccessToken = workloadIdentityCredential.getTokenSync(tokenRequestContext);
@@ -96,11 +112,5 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
             log.warn(e.getMessage(), e);
             callback.error("invalid_token", e.getMessage(), null);
         }
-    }
-
-    private void checkInitialized() {
-        if (!isInitialized)
-            log.trace("WorkloadIdentityLoginCallbackHandler handleTokenCallback called but not initialized!");
-            throw new IllegalStateException(String.format("To use %s, first call the configure or init method", getClass().getSimpleName()));
     }
 }
