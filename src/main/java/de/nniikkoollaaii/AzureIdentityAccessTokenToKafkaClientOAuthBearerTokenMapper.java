@@ -31,6 +31,7 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
         // Construct an SOSE JWT Consumer to parse the JWT
         JwtConsumer jwtConsumer = new JwtConsumerBuilder()
                 .setSkipSignatureVerification() //already checked by Azure Identity SDK
+                .setSkipAllValidators() //already checked by Azure Identity SDK
                 .build();
 
         //Parse it
@@ -54,19 +55,31 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
         else
             scopeRawCollection = Collections.emptySet();
 
-        Number expirationRaw = (Number) getClaim(payload, EXPIRATION_CLAIM_NAME);
+        Number expirationTimeRaw = (Number) getClaim(payload, EXPIRATION_CLAIM_NAME);
         //ToDo: make subject claim name configurable
         String subRaw = (String) getClaim(payload, subClaimName);
         Number issuedAtRaw = (Number) getClaim(payload, ISSUED_AT_CLAIM_NAME);
+
+
+        // The token's lifetime, expressed as the number of milliseconds since the poch. Must be non-negative
+        // https://github.com/a0x8o/kafka/blob/master/clients/src/main/java/org/apache/kafka/common/security/oauthbearer/secured/BasicOAuthBearerToken.java#L55
+        // AzureAD expiry claim: Timestamp in unix epoch Seconds where the token expires -> duration via extration with issuedAt
+        //  https://github.com/uglide/azure-content/blob/master/articles/active-directory/active-directory-token-and-claims.md
+        // and multiple with 1000 to convert to milliseconds
+        Long lifetimeMs = expirationTimeRaw.longValue() * 1000;
+        
+        // When the credential became valid, in terms of the number of milliseconds since the epoch
+        // https://github.com/a0x8o/kafka/blob/master/clients/src/main/java/org/apache/kafka/common/security/oauthbearer/secured/BasicOAuthBearerToken.java#L148
+        Long startTimeMs = issuedAtRaw.longValue() * 1000; 
 
 
         // construct an Kafka Client OAuth Bearer Token and return it
         OAuthBearerToken token = new BasicOAuthBearerToken(
                 azureIdentityAccessToken.getToken(),
                 new HashSet<>(scopeRawCollection),
-                expirationRaw.longValue(),
+                lifetimeMs,
                 subRaw,
-                issuedAtRaw.longValue());
+                startTimeMs);
         return token;
     }
 
