@@ -1,4 +1,4 @@
-package de.nniikkoollaaii;
+package io.github.nniikkoollaaii;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -10,7 +10,7 @@ import java.util.TimerTask;
 
 public class Main {
 
-    private static final String TOPIC_NAME = "de.nniikkoollaaii.topic";
+    private static final String TOPIC_NAME = "io.github.nniikkoollaaii.topic";
 
     public static void main(String[] args) {
 
@@ -32,7 +32,7 @@ public class Main {
         
         // Use Workload Identity 
         props.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;");
-        props.put("sasl.login.callback.handler.class", "de.nniikkoollaaii.WorkloadIdentityLoginCallbackHandler");
+        props.put("sasl.login.callback.handler.class", "io.github.nniikkoollaaii.WorkloadIdentityLoginCallbackHandler");
 
         // Create the Kafka producer
         Producer<String, String> producer = new KafkaProducer<>(props);

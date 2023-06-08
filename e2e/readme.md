@@ -83,9 +83,9 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
 
   mvn package
 
-  docker build -t de.nniikkoollaaii.kafka-producer-app:1.0.0 .
+  docker build -t io.github.nniikkoollaaii.kafka-producer-app:1.0.0 .
 
-  ./kind load docker-image de.nniikkoollaaii.kafka-producer-app:1.0.0
+  ./kind load docker-image io.github.nniikkoollaaii.kafka-producer-app:1.0.0
 
   kubectl apply -f manifests/
 

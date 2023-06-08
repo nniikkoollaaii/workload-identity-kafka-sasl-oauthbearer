@@ -12,7 +12,7 @@ This LoginCallbackHandler uses the Environment variables [defined in the Mutatin
 Configure this Kafka Client Login Callback Handler to be used by setting
 
 ```
-sasl.login.callback.handler.class=de.nniikkoollaaii.WorkloadIdentityLoginCallbackHandler
+sasl.login.callback.handler.class=io.github.nniikkoollaaii.WorkloadIdentityLoginCallbackHandler
 ```
 
 

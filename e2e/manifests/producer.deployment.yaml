@@ -16,7 +16,7 @@ metadata:
 spec:
   serviceAccountName: sa-test
   containers:
-    - image: de.nniikkoollaaii.kafka-producer-app:1.0.0
+    - image: io.github.nniikkoollaaii.kafka-producer-app:1.0.0
       name: producer
       env:
       - name: BOOTSTRAP_SERVERS

@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.nniikkoollaaii</groupId>
+    <groupId>io.github.nniikkoollaaii</groupId>
     <artifactId>kafka-producer-app</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
@@ -13,7 +13,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mainClass>de.nniikkoollaaii.Main</mainClass>
+        <mainClass>io.github.nniikkoollaaii.Main</mainClass>
     </properties>
 
     <dependencies>
@@ -26,7 +26,7 @@
 
 
         <dependency>
-            <groupId>de.nniikkoollaaii</groupId>
+            <groupId>io.github.nniikkoollaaii</groupId>
             <artifactId>workload-identity-kafka-sasl-oauthbearer</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
@@ -79,7 +79,7 @@
                         <archive>
                         <manifest>
                             <mainClass>
-                                de.nniikkoollaaii.Main
+                                io.github.nniikkoollaaii.Main
                             </mainClass>
                         </manifest>
                         </archive>

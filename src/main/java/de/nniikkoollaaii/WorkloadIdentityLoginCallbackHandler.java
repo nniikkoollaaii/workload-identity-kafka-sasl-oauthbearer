@@ -1,4 +1,4 @@
-package de.nniikkoollaaii;
+package io.github.nniikkoollaaii;
 
 
 import com.azure.core.credential.AccessToken;

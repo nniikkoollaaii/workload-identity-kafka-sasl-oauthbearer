@@ -1,4 +1,4 @@
-package de.nniikkoollaaii;
+package io.github.nniikkoollaaii;
 
 public class WorkloadIdentityKafkaClientOAuthBearerAuthenticationException extends RuntimeException {
 
