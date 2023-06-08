@@ -28,7 +28,7 @@ services:
       # OAuth Configuration
       KAFKA_SASL_SERVER_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerValidatorCallbackHandler
       KAFKA_SASL_JAAS_CONFIG: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;
-      KAFKA_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer/openid/v1/jwks # To edit
+      KAFKA_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/openid/v1/jwks # To edit
       KAFKA_SASL_OAUTHBEARER_SCOPE_CLAIM: scp
 
       

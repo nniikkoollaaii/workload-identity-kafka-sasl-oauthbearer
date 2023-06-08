@@ -1,4 +1,4 @@
-package io.github.nniikkoollaaii;
+package io.github.nniikkoollaaii.kafka.sasl_oauthbearer_workload_identity;
 
 
 import com.azure.core.credential.AccessToken;
@@ -19,6 +19,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class implements the {@link AuthenticateCallbackHandler} of the Kafka client library.  This interface is used in kafka clients as a callback handler to authenticate to a kafka broker.
+ * To do so this
+ * 
+ * This implementation uses the ENV vars set by AzureAD Workload Identity Mutating Admission Webhook (AZURE_FEDERATED_TOKEN_FILE, AZURE_AUTHORITY_HOST): https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html
+    
+ */
 public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbackHandler {
 
 
@@ -44,6 +51,11 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
             throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE));
         log.info("Federated Token File at path " + federatedTokeFilePath);
         
+        String authorityHost = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST);
+        if (authorityHost == null || authorityHost.equals(""))
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST));
+        log.info("Authority host " + authorityHost);
+        
         String tenantId = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID);
         if (tenantId == null || tenantId.equals(""))
             throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID));
@@ -57,6 +69,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
         
         workloadIdentityCredential = new WorkloadIdentityCredentialBuilder()
                 .tokenFilePath(federatedTokeFilePath)
+                .authorityHost(authorityHost)
                 .clientId(clientId)
                 .tenantId(tenantId)
                 .build();

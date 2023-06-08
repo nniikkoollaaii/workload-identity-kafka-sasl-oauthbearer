@@ -27,7 +27,7 @@
 
         <dependency>
             <groupId>io.github.nniikkoollaaii</groupId>
-            <artifactId>workload-identity-kafka-sasl-oauthbearer</artifactId>
+            <artifactId>kafka-sasl-oauthbearer-workload-identity</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

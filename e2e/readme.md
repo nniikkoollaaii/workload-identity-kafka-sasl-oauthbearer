@@ -24,9 +24,9 @@ Create files as linked on the site above.
 
 Serve files via Github Pages -> copy files to your special <username> repo -> Result:
 
-https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer/.well-kown/openid-configuration
+https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/.well-kown/openid-configuration
 
-https://nniikkoollaaii.github.io/workload-identity-kafka-sasl-oauthbearer/openid/v1/jwks
+https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/openid/v1/jwks
 
 
 
