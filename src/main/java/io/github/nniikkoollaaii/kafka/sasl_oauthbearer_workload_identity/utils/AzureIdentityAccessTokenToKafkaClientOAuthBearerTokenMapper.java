@@ -19,6 +19,9 @@ import java.util.Map;
 import static org.apache.kafka.common.security.oauthbearer.internals.secured.LoginAccessTokenValidator.EXPIRATION_CLAIM_NAME;
 import static org.apache.kafka.common.security.oauthbearer.internals.secured.LoginAccessTokenValidator.ISSUED_AT_CLAIM_NAME;
 
+/**
+ * Mapper class mapping an {@link com.azure.core.credential.AccessToken} returned by the Azure Identity SDK to an {@link org.apache.kafka.common.security.oauthbearer.internals.secured.BasicOAuthBearerToken} expected by the kafka client sasl {@link org.apache.kafka.common.security.oauthbearer.OAuthBearerTokenCallback}
+ */
 public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
 
     private static final Logger log = LoggerFactory.getLogger(AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.class);

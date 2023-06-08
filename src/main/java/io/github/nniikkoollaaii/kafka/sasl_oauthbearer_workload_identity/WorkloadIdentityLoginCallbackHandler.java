@@ -23,11 +23,23 @@ import io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils.A
 import io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils.WorkloadIdentityKafkaClientOAuthBearerAuthenticationException;
 
 /**
- * This class implements the {@link AuthenticateCallbackHandler} of the Kafka client library.  This interface is used in kafka clients as a callback handler to authenticate to a kafka broker.
- * To do so this
+ * This class implements the {@link AuthenticateCallbackHandler} of the Kafka client library. This interface is used in kafka clients as a callback handler to authenticate to a kafka broker.
+ * This implementation is to be used in environments supporting <a href="https://azure.github.io/azure-workload-identity/docs/introduction.html">AzureAD Workload Identity</a>
  * 
- * This implementation uses the ENV vars set by AzureAD Workload Identity Mutating Admission Webhook (AZURE_FEDERATED_TOKEN_FILE, AZURE_AUTHORITY_HOST): https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html
-    
+ * It uses the ENV vars set by AzureAD Workload Identity Mutating Admission Webhook (AZURE_FEDERATED_TOKEN_FILE, AZURE_AUTHORITY_HOST), @see <a href="https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html">docs</a>, and the <a href="https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/identity">Azure Identity SDK for Java</a> {@link com.azure.identity.WorkloadIdentityCredential} to get an JWT token from AzureAD 
+ * to be used in the kafka SASL OAUTHBEARER mechanism to authenticate to the kafka broker.
+ * 
+ * Use this implementation like so
+ * 
+ * <pre>
+ * props.put("security.protocol", "SASL_SSL");
+ * props.put("sasl.mechanism", "OAUTHBEARER");
+ *   
+ * // Use Workload Identity 
+ * props.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;");
+ * props.put("sasl.login.callback.handler.class", "io.github.nniikkoollaaii.WorkloadIdentityLoginCallbackHandler");
+ * 
+ * </pre>
  */
 public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbackHandler {
 
@@ -45,6 +57,9 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     private TokenRequestContext tokenRequestContext;
 
 
+    /**
+     * Constructor reading the required ENV vars to initialize required objects.
+     */
     public WorkloadIdentityLoginCallbackHandler() {
         log.trace("Starting configuration process for WorkloadIdentityLoginCallbackHandler");
 
@@ -89,12 +104,21 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     }
 
     // This method is not called in the e2e test ... ?! Why? -> setup in constructor
+    /**
+     * not used
+     * @param map
+     * @param s
+     * @param list
+     */
     @Override
     public void configure(Map<String, ?> map, String s, List<AppConfigurationEntry> list) {
         //nop required for WorkloadIdentityCredential
         log.trace("configure WorkloadIdentityLoginCallbackHandler");
     }
 
+    /**
+     * not used
+     */
     @Override
     public void close() {
         //nop required for WorkloadIdentityCredential
@@ -102,6 +126,13 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     }
 
 
+    /**
+     * Called by the kafka client. The magic happens here ...
+     * The token is fetched synchronizly from AzureAD and returned to the callback object
+     * @param callbacks
+     * @throws IOException
+     * @throws UnsupportedCallbackException
+     */
     @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 
