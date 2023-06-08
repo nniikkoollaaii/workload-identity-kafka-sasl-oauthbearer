@@ -1,4 +1,4 @@
-package io.github.nniikkoollaaii.kafka.sasl_oauthbearer_workload_identity;
+package io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity;
 
 
 import com.azure.core.credential.AccessToken;
@@ -18,6 +18,9 @@ import javax.security.auth.login.AppConfigurationEntry;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils.AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper;
+import io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils.WorkloadIdentityKafkaClientOAuthBearerAuthenticationException;
 
 /**
  * This class implements the {@link AuthenticateCallbackHandler} of the Kafka client library.  This interface is used in kafka clients as a callback handler to authenticate to a kafka broker.

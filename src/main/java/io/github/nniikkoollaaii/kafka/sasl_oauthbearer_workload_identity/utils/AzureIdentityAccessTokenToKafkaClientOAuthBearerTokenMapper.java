@@ -1,4 +1,4 @@
-package io.github.nniikkoollaaii;
+package io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils;
 
 import com.azure.core.credential.AccessToken;
 import org.apache.kafka.common.security.oauthbearer.OAuthBearerToken;
