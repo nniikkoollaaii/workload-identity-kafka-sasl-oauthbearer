@@ -47,17 +47,9 @@ jobs:
         cluster_name: ${{ env.KIND_CLUSTER_NAME }}
         config: e2e/kind.config
 
-
     - uses: azure/setup-kubectl@v3
       name: Install kubectl
       
-    - name: print secrets
-      run: |
-          echo $DEV_ENV_FILE &gt;&gt; src/.env
-          cat src/.env
-      shell: bash
-      env:
-        
     - name: Run test script
       run: |
         echo "$E2E_SA_KEY" > e2e/sa.key
