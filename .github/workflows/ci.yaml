@@ -14,6 +14,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
+
+env:
+  KIND_CLUSTER_NAME: "cluster"
+
+
 jobs:
   build:
 
@@ -34,3 +39,32 @@ jobs:
     # comment out because of error "Error: Could not generate a snapshot of the dependencies; Maximum call stack size exceeded"
     #- name: Update dependency graph
     #  uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+      
+      
+    - name: Create k8s Kind Cluster
+      uses: helm/kind-action@v1.3.0
+      with:
+        cluster_name: ${{ env.KIND_CLUSTER_NAME }}
+        config: e2e/kind.config
+
+
+    - uses: azure/setup-kubectl@v3
+      name: Install kubectl
+      
+    - name: print secrets
+      run: |
+          echo $DEV_ENV_FILE &gt;&gt; src/.env
+          cat src/.env
+      shell: bash
+      env:
+        
+    - name: Run test script
+      run: |
+        echo "$E2E_SA_KEY" > e2e/sa.key
+        
+        chmod +x ./e2e/test.sh
+        ./e2e/test.sh
+      shell: bash
+      env: 
+        BUILD_NUMBER: ${{github.run_number}}
+        E2E_SA_KEY : ${{secrets.E2E_SA_KEY}}

@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-consumer
+  namespace: test
+  labels:
+    azure.workload.identity/use: "true"
+spec:
+  template:
+    spec:
+      serviceAccountName: sa-test
+      restartPolicy: Never
+      containers:
+        - image: io.github.nniikkoollaaii.kafka-consumer-app:1.0.0
+          name: consumer
+          env:
+          - name: BOOTSTRAP_SERVERS
+            value: "broker:9092"

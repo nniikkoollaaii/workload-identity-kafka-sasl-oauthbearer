@@ -10,7 +10,7 @@ import java.util.TimerTask;
 
 public class Main {
 
-    private static final String TOPIC_NAME = "nniikkoollaaii.topic";
+    private static final String TOPIC_NAME = "io.github.nniikkoollaaii.topic";
 
     public static void main(String[] args) {
 
@@ -38,14 +38,29 @@ public class Main {
         Producer<String, String> producer = new KafkaProducer<>(props);
 
 
-        String event = System.getenv("MESSAGE_CONTENT");
+        for (int i = 0; i < 100; i++) {
+            String event = generateEvent();
 
-        // Publish the event to the Kafka topic
-        producer.send(new ProducerRecord<>(TOPIC_NAME, event));
-        producer.flush();
-        System.out.println("Published event: " + event);
+            // Publish the event to the Kafka topic
+            producer.send(new ProducerRecord<>(TOPIC_NAME, event));
+            producer.flush();
+            System.out.println("Published event: " + event);
 
+            try {
+                Thread.sleep(500); 
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+    
+        }
+    
         // Clean up and close the Kafka producer
         producer.close();
+    }
+
+    private static String generateEvent() {
+        // Implement your event generation logic here
+        // For simplicity, let's just return a timestamp
+        return Long.toString(System.currentTimeMillis());
     }
 }
