@@ -12,7 +12,7 @@ This LoginCallbackHandler uses the Environment variables [defined in the Mutatin
 Configure this Kafka Client Login Callback Handler to be used by setting
 
 ```
-sasl.login.callback.handler.class=io.github.nniikkoollaaii.WorkloadIdentityLoginCallbackHandler
+sasl.login.callback.handler.class=io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.WorkloadIdentityLoginCallbackHandler
 ```
 
 
@@ -23,8 +23,11 @@ see [here](./e2e/readme.md)
 
 ## ToDo
 
-- Fail fast when not in WI environment. Currently error buried in exception because CLIENT_ID Env is not set -> null and AzureAD rejecting token request
+- Make scope configurable
 
+- Make env names configurable
+
+- Implement other configuration options than reading from env vars. Like extension attributes with value for e.g. token file path or client id. 
 
 ## Develop
 
