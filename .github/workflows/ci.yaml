@@ -47,16 +47,21 @@ jobs:
         cluster_name: ${{ env.KIND_CLUSTER_NAME }}
         config: e2e/kind.config
 
+
     - uses: azure/setup-kubectl@v3
       name: Install kubectl
       
-    - name: Run test script
+    - name: Copy private key for E2E test to file
       run: |
         echo "$E2E_SA_KEY" > e2e/sa.key
+      shell: bash
+      env:
+        E2E_SA_KEY : ${{secrets.E2E_SA_KEY}}
         
+    - name: Run test script
+      run: |
         chmod +x ./e2e/test.sh
         ./e2e/test.sh
       shell: bash
       env: 
         BUILD_NUMBER: ${{github.run_number}}
-        E2E_SA_KEY : ${{secrets.E2E_SA_KEY}}
