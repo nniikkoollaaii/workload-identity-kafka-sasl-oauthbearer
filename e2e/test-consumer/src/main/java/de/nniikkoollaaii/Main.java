@@ -32,7 +32,7 @@ public class Main {
         props.put("sasl.mechanism", "OAUTHBEARER");
         // Use Workload Identity 
         props.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;");
-        props.put("sasl.login.callback.handler.class", "io.github.nniikkoollaaii.WorkloadIdentityLoginCallbackHandler");
+        props.put("sasl.login.callback.handler.class", "io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.WorkloadIdentityLoginCallbackHandler");
 
         // Create the Kafka consumer
         Consumer<String, String> consumer = new KafkaConsumer<>(props);
