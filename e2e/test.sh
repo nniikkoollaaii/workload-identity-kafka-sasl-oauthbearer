@@ -46,7 +46,7 @@ echo ""
 echo "Create test pods in KinD cluter"
 echo ""
 kubectl apply -f manifests/ns.yaml
-sed -i "s/{BUILD_NUMBER}/$BUILD_NUMBER/g" manifests/producer.job.yaml
+sed -i "s/{BUILD_NUMBER}/$BUILD_NUMBER/g" manifests/producer.pod.yaml
 kubectl apply -f manifests
 
 echo ""
