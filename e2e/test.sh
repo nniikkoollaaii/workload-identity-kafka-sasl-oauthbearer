@@ -46,8 +46,11 @@ echo ""
 echo "Create test pods in KinD cluter"
 echo ""
 kubectl apply -f manifests/ns.yaml
+kubectl apply -f manifests/sa.yaml
+kubectl apply -f manifests/host.service.yaml
 sed -i "s/{BUILD_NUMBER}/$BUILD_NUMBER/g" manifests/producer.pod.yaml
-kubectl apply -f manifests
+kubectl apply -f manifests/producer.pod.yaml
+kubectl apply -f manifests/consumer.pod.yaml
 
 echo ""
 echo "Sleep 10s"
