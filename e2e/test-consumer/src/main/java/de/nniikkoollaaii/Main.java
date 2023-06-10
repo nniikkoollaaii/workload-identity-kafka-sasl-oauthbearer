@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-public class KafkaConsumerApp {
+public class Main {
 
     private static final String TOPIC_NAME = "nniikkoollaaii.topic";
     private static final String OUTPUT_FILE = "output.txt";
