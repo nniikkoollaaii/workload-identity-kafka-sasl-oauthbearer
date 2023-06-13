@@ -21,6 +21,10 @@ docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
 kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
 curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1.0/azure-wi-webhook.yaml | envsubst | kubectl apply -f -
 
+# In early pipeline runs the test failed because the Webhook Service was not ready. 
+# Local tests showed it took from "2023-06-13T20:04:14.624230Z to "2023-06-13T20:06:06.372301Z"
+# until message "Serving webhook server" was displayed in logs of azure-wi-webhook-controller-manager-* pods
+sleep 120s
 
 
 echo ""
