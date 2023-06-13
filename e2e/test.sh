@@ -24,8 +24,12 @@ curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1
 # In early pipeline runs the test failed because the Webhook Service was not ready. 
 # Local tests showed it took from "2023-06-13T20:04:14.624230Z to "2023-06-13T20:06:06.372301Z"
 # until message "Serving webhook server" was displayed in logs of azure-wi-webhook-controller-manager-* pods
+echo "sleep 120s to give azure-wi-webhook-controller-manager time to setup"
 sleep 120s
 
+#debug
+kubectl get pods -A
+kubectl logs -f --selector=azure-workload-identity.io/system=true -n azure-workload-identity-system
 
 echo ""
 echo "Build producer"
