@@ -4,6 +4,7 @@
 
 https://azure.github.io/azure-workload-identity/docs/topics/self-managed-clusters/examples/kind.html
 
+
 ## Setup
 
 ### ServiceAccount Key Generation
@@ -30,10 +31,21 @@ https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/openid
 
 
 
+### IdP configuration - here AzureAD
+
+  export APPLICATION_NAME="kafka-producer"
+  az ad sp create-for-rbac --name "${APPLICATION_NAME}"
+
+  # Get the object ID of the AAD application
+  export APPLICATION_OBJECT_ID="$(az ad app show --id ${APPLICATION_CLIENT_ID} --query id -otsv)"
+
+  az ad app federated-credential create --id ${APPLICATION_OBJECT_ID} --parameters @params.json
+
+
 ### Create KIND cluster
 
 ```
-./kind create cluster --image kindest/node:v1.22.4 --config kind.config
+./kind create cluster --image kindest/node:v1.24.0 --config kind.local.config
 ```
 
 
@@ -49,16 +61,6 @@ https://docs.confluent.io/platform/current/installation/docker/image-reference.h
 
   docker-compose up -d
 
-### IdP configuration - here AzureAD
-
-  export APPLICATION_NAME="kafka-producer"
-  az ad sp create-for-rbac --name "${APPLICATION_NAME}"
-
-  # Get the object ID of the AAD application
-  export APPLICATION_OBJECT_ID="$(az ad app show --id ${APPLICATION_CLIENT_ID} --query id -otsv)"
-
-  az ad app federated-credential create --id ${APPLICATION_OBJECT_ID} --parameters @params.json
-
 
 ## Mutating Admission Webhook
 
@@ -72,10 +74,18 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
     --create-namespace \
     --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65"
 
-
   docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook@sha256:0b909323be05aad09f67638bfe1cedd2eac9cafb9e3f10aa8d64224c939fce7b
   
   ./kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook@sha256:0b909323be05aad09f67638bfe1cedd2eac9cafb9e3f10aa8d64224c939fce7b
+
+
+or
+
+  export AZURE_TENANT_ID="f3292839-9228-4d56-a08c-6023c5d71e65"
+  docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
+  ./kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
+  curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1.0/azure-wi-webhook.yaml | envsubst | kubectl apply -f -
+
 
 ## Test producer
 
