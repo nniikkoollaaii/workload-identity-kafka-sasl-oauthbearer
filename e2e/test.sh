@@ -31,7 +31,7 @@ helm repo update
 helm install workload-identity-webhook azure-workload-identity/workload-identity-webhook \
   --namespace azure-workload-identity-system \
   --create-namespace \
-  --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65"
+  --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65" \
   --wait \
   --debug \
   -v=5 \
@@ -40,8 +40,8 @@ helm install workload-identity-webhook azure-workload-identity/workload-identity
 # In early pipeline runs the test failed because the Webhook Service was not ready. 
 # Local tests showed it took from "2023-06-13T20:04:14.624230Z to "2023-06-13T20:06:06.372301Z"
 # until message "Serving webhook server" was displayed in logs of azure-wi-webhook-controller-manager-* pods
-echo "sleep 120s to give azure-wi-webhook-controller-manager time to setup"
-sleep 120s
+#echo "sleep 120s to give azure-wi-webhook-controller-manager time to setup"
+#sleep 120s
 
 #debug
 kubectl get pods -A
