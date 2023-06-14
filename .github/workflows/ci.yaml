@@ -63,6 +63,8 @@ jobs:
 
     - uses: azure/setup-kubectl@v3
       name: Install kubectl
+    - uses: azure/setup-helm@v3
+      name: Install helm
 
     - name: Run test script
       run: |
