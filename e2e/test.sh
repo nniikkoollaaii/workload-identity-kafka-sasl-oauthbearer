@@ -42,10 +42,11 @@ helm install workload-identity-webhook azure-workload-identity/workload-identity
 # until message "Serving webhook server" was displayed in logs of azure-wi-webhook-controller-manager-* pods
 #echo "sleep 120s to give azure-wi-webhook-controller-manager time to setup"
 #sleep 120s
+# with Helm use --wait
 
 #debug
 kubectl get pods -A
-kubectl logs -f --selector=azure-workload-identity.io/system=true -n azure-workload-identity-system
+kubectl logs --selector=azure-workload-identity.io/system=true -n azure-workload-identity-system
 
 echo ""
 echo "Build producer"
