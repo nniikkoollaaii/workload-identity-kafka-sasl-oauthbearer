@@ -30,3 +30,6 @@ replay_pid*
 **/target/**
 azwi
 kind
+
+**/sa.key
+**/*.secret

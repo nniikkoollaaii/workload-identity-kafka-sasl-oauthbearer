@@ -9,6 +9,7 @@ services:
       - kafka-local
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
   
   
   broker:
@@ -23,11 +24,32 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT,TOKEN:SASL_SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,TOKEN://broker:9092
+      
+      KAFKA_SUPER_USERS: User:admin;User:mds;User:superUser;User:ANONYMOUS
+      #KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=INFO"
+      #KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+
+      # KAFKA Security
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN, OAUTHBEARER
+
+
+      KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.plain.PlainLoginModule required \
+              username="admin" \
+              password="admin-secret" \
+              user_admin="admin-secret" \
+              user_mds="mds-secret";
+
       # OAuth Configuration
-      KAFKA_SASL_SERVER_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerValidatorCallbackHandler
-      KAFKA_SASL_JAAS_CONFIG: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;
+      KAFKA_LISTENER_NAME_TOKEN_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerValidatorCallbackHandler
+      #KAFKA_LISTENER_NAME_TOKEN_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.confluent.kafka.server.plugins.auth.token.TokenBearerServerLoginCallbackHandler
+      KAFKA_LISTENER_NAME_TOKEN_SASL_ENABLED_MECHANISMS: OAUTHBEARER
+      KAFKA_LISTENER_NAME_TOKEN_OAUTHBEARER_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;"
       KAFKA_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/openid/v1/jwks # To edit
       KAFKA_SASL_OAUTHBEARER_SCOPE_CLAIM: scp
 
@@ -35,10 +57,12 @@ services:
   # test-producer:
   #   image: io.github.nniikkoollaaii.kafka-producer-app:1.0.0
   #   container_name: producer
+  #   restart: "no"
   #   environment:
   #     CLIENT_ID: "c8843062-a9dc-49ed-8874-3b2d911ca41a"
   #     CLIENT_SECRET: ""
   #     BOOTSTRAP_SERVERS: "broker:9092"
+  #     MESSAGE_CONTENT: "123456789"
   #   networks: 
   #     - kafka-local
 

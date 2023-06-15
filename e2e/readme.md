@@ -72,20 +72,14 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
   helm install workload-identity-webhook azure-workload-identity/workload-identity-webhook \
     --namespace azure-workload-identity-system \
     --create-namespace \
-    --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65"
+    --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65" \
+    --wait \
+    --debug \
+    -v=5 \
+    --devel
 
-  docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook@sha256:0b909323be05aad09f67638bfe1cedd2eac9cafb9e3f10aa8d64224c939fce7b
-  
-  ./kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook@sha256:0b909323be05aad09f67638bfe1cedd2eac9cafb9e3f10aa8d64224c939fce7b
-
-
-or
-
-  export AZURE_TENANT_ID="f3292839-9228-4d56-a08c-6023c5d71e65"
-  export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD"
   docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
   ./kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
-  curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1.0/azure-wi-webhook.yaml | envsubst | kubectl apply -f -
 
 
 ## Test producer
