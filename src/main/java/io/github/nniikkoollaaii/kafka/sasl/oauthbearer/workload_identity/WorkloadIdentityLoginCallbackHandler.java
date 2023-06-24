@@ -63,37 +63,45 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
 
     private static final String EXTENSION_PREFIX = "extension_";
     private Map<String, Object> moduleOptions;
+    private boolean isInitialized = false;
 
     private WorkloadIdentityCredential workloadIdentityCredential;
     private TokenRequestContext tokenRequestContext;
 
 
+    // This method is not called in the e2e test ... ?! Why? -> setup in constructor
     /**
-     * Constructor reading the required ENV vars to initialize required objects.
+     * not used
+     * @param configs
+     * @param saslMechanism
+     * @param jaasConfigEntries
      */
-    public WorkloadIdentityLoginCallbackHandler() {
+    @Override
+    public void configure(Map<String, ?> configs, String saslMechanism, List<AppConfigurationEntry> jaasConfigEntries) {
         log.trace("Starting configuration process for WorkloadIdentityLoginCallbackHandler");
+        
+        moduleOptions = JaasOptionsUtils.getOptions(saslMechanism, jaasConfigEntries);
 
         // Construct a WorkloadIdentityCredential object from Azure Identity SDK
         String federatedTokeFilePath = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE);
         if (federatedTokeFilePath == null || federatedTokeFilePath.equals(""))
             throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE));
-        log.info("Federated Token File at path " + federatedTokeFilePath);
+        log.debug("Config: Federated Token File Path " + federatedTokeFilePath);
         
         String authorityHost = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST);
         if (authorityHost == null || authorityHost.equals(""))
             throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST));
-        log.info("Authority host " + authorityHost);
+            log.debug("Config: Authority host " + authorityHost);
         
         String tenantId = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID);
         if (tenantId == null || tenantId.equals(""))
             throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID));
-        log.info("Tenant Id " + tenantId);
+            log.debug("Config: Tenant Id " + tenantId);
         
         String clientId = System.getenv(AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID);
         if (clientId == null || clientId.equals(""))
             throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID));
-        log.info("Client Id " + clientId);
+            log.debug("Config: Client Id " + clientId);
         
         
         workloadIdentityCredential = new WorkloadIdentityCredentialBuilder()
@@ -107,26 +115,10 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
         //Construct a TokenRequestContext to be used be requsting a token at runtime.
         //ToDo: make Scope configurable to get access token for e.g. App Registration Kafka Cluster
         String defaultScope =  clientId + "/.default";
-        log.info("Scope " + defaultScope);
+        log.debug("Config: Scope " + defaultScope);
         tokenRequestContext = new TokenRequestContext() // TokenRequestContext: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/TokenRequestContext.java
                 .addScopes(defaultScope)
                 .setTenantId(tenantId);
-
-    }
-
-    // This method is not called in the e2e test ... ?! Why? -> setup in constructor
-    /**
-     * not used
-     * @param configs
-     * @param saslMechanism
-     * @param jaasConfigEntries
-     */
-    @Override
-    public void configure(Map<String, ?> configs, String saslMechanism, List<AppConfigurationEntry> jaasConfigEntries) {
-        //nop required for WorkloadIdentityCredential
-        log.trace("configure WorkloadIdentityLoginCallbackHandler");
-
-        moduleOptions = JaasOptionsUtils.getOptions(saslMechanism, jaasConfigEntries);
 
     }
 
@@ -149,7 +141,6 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
      */
     @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-
         for (Callback callback : callbacks) {
             if (callback instanceof OAuthBearerTokenCallback) {
                 handleTokenCallback((OAuthBearerTokenCallback) callback);
@@ -162,6 +153,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     }
 
     private void handleTokenCallback(OAuthBearerTokenCallback callback) throws IOException {
+        checkInitialized();
         log.trace("handleTokenCallback - get Token from AzureAD");
 
         // AccessToken https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/AccessToken.java
@@ -211,5 +203,10 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
         }
 
         callback.extensions(saslExtensions);
+    }
+
+    private void checkInitialized() {
+        if (!isInitialized)
+            throw new IllegalStateException(String.format("To use %s, first call the configure or init method", getClass().getSimpleName()));
     }
 }
