@@ -44,22 +44,25 @@ jobs:
     - name: Prepare KinD config
       run: |
         # Copy private key for E2E test to file
-        echo "$E2E_SA_KEY" > ./e2e/sa.key
+        echo "${{ secrets.E2E_SA_KEY_2 }}" > ./e2e/sa.key
         echo "Created file ./e2e/sa.key"
         
+
+        echo "Set current dir $(pwd) in kind.config"
         sed -i "s|{E2E_DIR_PATH}|$(pwd)|g" ./e2e/kind.config
+
         echo "KinD Config:"
         cat ./e2e/kind.config
       shell: bash
-      env:
-        E2E_SA_KEY : ${{secrets.E2E_SA_KEY}}
         
     - name: Create k8s Kind Cluster
-      uses: helm/kind-action@v1.3.0
+      uses: helm/kind-action@v1.7.0
       with:
         cluster_name: ${{ env.KIND_CLUSTER_NAME }}
         config: e2e/kind.config
-
+        #version: 1.24.0
+        #install_only: true
+        #wait: 180s
 
     - uses: azure/setup-kubectl@v3
       name: Install kubectl

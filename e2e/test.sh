@@ -1,9 +1,9 @@
-
 cd e2e
 
 echo ""
 echo "Create Kafka cluster"
 echo ""
+sed -i "s|{E2E_DIR_PATH}|$(pwd)|g" ./docker-compose.yaml
 docker-compose -f docker-compose.yaml up -d 
 
 echo ""
@@ -32,7 +32,7 @@ helm install workload-identity-webhook azure-workload-identity/workload-identity
   --namespace azure-workload-identity-system \
   --create-namespace \
   --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65" \
-  --wait \
+  --wait --timeout 2m30s\
   --debug \
   -v=5 \
   --devel
@@ -75,14 +75,22 @@ echo ""
 kubectl apply -f manifests/ns.yaml
 kubectl apply -f manifests/sa.yaml
 kubectl apply -f manifests/host.service.yaml
-sed -i "s/{BUILD_NUMBER}/$BUILD_NUMBER/g" manifests/producer.pod.yaml
-kubectl apply -f manifests/producer.pod.yaml
+
+
 kubectl apply -f manifests/consumer.pod.yaml
 
 echo ""
-echo "Sleep 10s"
+echo "Sleep 20s"
 echo ""
-sleep 10s
+sleep 20s
+
+sed -i "s/{BUILD_NUMBER}/$BUILD_NUMBER/g" manifests/producer.pod.yaml
+kubectl apply -f manifests/producer.pod.yaml
+
+echo ""
+echo "Sleep 20s"
+echo ""
+sleep 20s
 
 echo ""
 echo "Producer logs: "
@@ -95,7 +103,10 @@ echo ""
 kubectl logs test-consumer -n test
 kubectl logs test-consumer -n test > result-logs.txt
 
-
+# echo ""
+# echo "Broker logs: "
+# echo ""
+# docker logs broker
 
 echo ""
 echo "Checking results ..."

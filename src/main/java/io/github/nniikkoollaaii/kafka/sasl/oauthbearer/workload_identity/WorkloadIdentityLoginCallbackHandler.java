@@ -69,9 +69,8 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     private TokenRequestContext tokenRequestContext;
 
 
-    // This method is not called in the e2e test ... ?! Why? -> setup in constructor
     /**
-     * not used
+     * Configure this LoginCallbackHandler
      * @param configs
      * @param saslMechanism
      * @param jaasConfigEntries
@@ -120,6 +119,8 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
                 .addScopes(defaultScope)
                 .setTenantId(tenantId);
 
+                
+        isInitialized = true;
     }
 
     /**
