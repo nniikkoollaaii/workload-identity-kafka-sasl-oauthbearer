@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+   
+  test-producer:
+    image: io.github.nniikkoollaaii.kafka-producer-app:1.0.0
+    container_name: producer
+    restart: "no"
+    environment:
+      CLIENT_ID: "c8843062-a9dc-49ed-8874-3b2d911ca41a"
+      CLIENT_SECRET: "<secret>"
+      BOOTSTRAP_SERVERS: "broker:9092"
+      MESSAGE_CONTENT: "123456789"
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /var/ssl/private/truststore/kafka.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: 123456
+    volumes:
+      - "/workspaces/workload-identity-kafka-sasl-oauthbearer/e2e/broker:/var/ssl/private"
+    networks: 
+      - kafka-local
+      
+  test-consumer:
+    image: io.github.nniikkoollaaii.kafka-consumer-app:1.0.0
+    container_name: consumer
+    restart: "no"
+    environment:
+      CLIENT_ID: "c8843062-a9dc-49ed-8874-3b2d911ca41a"
+      CLIENT_SECRET: "<secret>"
+      BOOTSTRAP_SERVERS: "broker:9092"
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /var/ssl/private/truststore/kafka.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: 123456
+    volumes:
+      - "/workspaces/workload-identity-kafka-sasl-oauthbearer/e2e/broker:/var/ssl/private"
+    networks: 
+      - kafka-local

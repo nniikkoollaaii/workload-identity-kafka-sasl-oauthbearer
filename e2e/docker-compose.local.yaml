@@ -1,0 +1,7 @@
+version: '3.7'
+services:
+  broker:
+    environment:
+      KAFKA_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: https://login.microsoftonline.com/f3292839-9228-4d56-a08c-6023c5d71e65/discovery/v2.0/keys
+    volumes:
+      - "/workspaces/workload-identity-kafka-sasl-oauthbearer/e2e/broker:/var/ssl/private"

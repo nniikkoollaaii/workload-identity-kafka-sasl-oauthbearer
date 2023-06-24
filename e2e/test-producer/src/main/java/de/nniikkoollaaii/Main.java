@@ -20,6 +20,11 @@ public class Main {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         
+        //Use custom truststore in local setup
+        props.put("ssl.truststore.location", System.getenv("KAFKA_SSL_TRUSTSTORE_LOCATION"));
+        props.put("ssl.truststore.password", System.getenv("KAFKA_SSL_TRUSTSTORE_PASSWORD"));
+        props.put("ssl.endpoint.identification.algorithm", "");
+        
         props.put("security.protocol", "SASL_SSL");
         props.put("sasl.mechanism", "OAUTHBEARER");
         

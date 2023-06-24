@@ -21,7 +21,7 @@ https://azure.github.io/azure-workload-identity/docs/installation/self-managed-c
 
 Create files as linked on the site above.
 
-  azwi jwks --public-keys sa.pub --output-file jwks.json
+  ./azwi jwks --public-keys sa.pub --output-file jwks.json
 
 Serve files via Github Pages -> copy files to your special <username> repo -> Result:
 
@@ -51,6 +51,15 @@ https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/openid
 
 ### Create Kafka cluster
 
+
+#### Create custom CA for local development
+
+(Without always getting SSLAuthenticationException (only with the consumer not with the producer) when connecting to the broker.)
+
+see [ssl/readme.md](./ssl/readme.md)
+
+#### Setup Cluster
+
 Docs:
 
 https://cwiki.apache.org/confluence/plugins/servlet/mobile?contentId=186877575#KIP768:ExtendSASL/OAUTHBEARERwithSupportforOIDC-BrokerConfiguration
@@ -59,7 +68,7 @@ https://docs.confluent.io/platform/current/installation/docker/config-reference.
 https://docs.confluent.io/platform/current/installation/docker/image-reference.html
 
 
-  docker-compose up -d
+  docker-compose -f docker-compose.yaml -f docker-compose.local.yaml up -d
 
 
 ## Mutating Admission Webhook
@@ -82,6 +91,8 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
   ./kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
 
 
+  kubectl logs azure-wi-webhook-controller-manager-7664467bfc-5m2bm -n azure-workload-identity-system
+
 ## Test producer
 
   cd test-producer
@@ -94,6 +105,22 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
 
   ./kind load docker-image io.github.nniikkoollaaii.kafka-producer-app:1.0.0
 
+
+## Test consumer
+
+  cd test-consumer
+
+  mvn package
+
+  docker build -t io.github.nniikkoollaaii.kafka-consumer-app:1.0.0 .
+
+  cd ..
+
+  ./kind load docker-image io.github.nniikkoollaaii.kafka-consumer-app:1.0.0
+
+## Run Consumer and producer
+
   kubectl apply -f manifests/
 
   kubectl logs -f test-producer -n test
+  kubectl logs -f test-consumer -n test

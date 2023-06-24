@@ -53,6 +53,7 @@ echo "Build producer"
 echo ""
 cd test-producer
 mvn -B package --no-transfer-progress -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+cp ../broker/truststore/kafka.truststore.jks ./kafka.truststore.jks
 docker build -t io.github.nniikkoollaaii.kafka-producer-app:1.0.0 .
 kind load docker-image io.github.nniikkoollaaii.kafka-producer-app:1.0.0
 cd ..
@@ -62,6 +63,7 @@ echo "Build consumer"
 echo ""
 cd test-consumer
 mvn -B package --no-transfer-progress -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+cp ../broker/truststore/kafka.truststore.jks ./kafka.truststore.jks
 docker build -t io.github.nniikkoollaaii.kafka-consumer-app:1.0.0 .
 kind load docker-image io.github.nniikkoollaaii.kafka-consumer-app:1.0.0
 cd ..
