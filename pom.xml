@@ -36,8 +36,24 @@
             <artifactId>jose4j</artifactId>
             <version>0.9.3</version>
         </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/io.confluent/kafka-schema-registry-client -->
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-schema-registry-client</artifactId>
+            <version>7.5.0</version>
+        </dependency>
     </dependencies>
 
+
+    <repositories>
+        <repository>
+            <id>confluent</id>
+            <name>Confluent</name>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
