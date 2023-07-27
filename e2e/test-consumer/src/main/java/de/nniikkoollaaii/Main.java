@@ -7,6 +7,9 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import org.apache.kafka.clients.consumer.*;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -53,18 +56,18 @@ public class Main {
 
 
         // Create the Kafka consumer
-        Consumer<String, DataRecordAvro> consumer = new KafkaConsumer<>(props);
+        Consumer<String, GenericRecord> consumer = new KafkaConsumer<>(props);
 
         // Subscribe to the Kafka topic
         consumer.subscribe(Collections.singletonList(TOPIC_NAME));
 
         // Continuously poll for new records
         while (true) {
-            ConsumerRecords<String, DataRecordAvro> records = consumer.poll(Duration.ofMillis(100));
+            ConsumerRecords<String, GenericRecord> records = consumer.poll(Duration.ofMillis(100));
 
             // Process each record
             records.forEach(record -> {
-                DataRecordAvro event = record.value();
+                GenericRecord event = record.value();
                 System.out.println("Received event: " + event.toString());
             });
 

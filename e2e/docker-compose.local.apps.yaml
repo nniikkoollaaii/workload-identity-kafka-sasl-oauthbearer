@@ -12,6 +12,7 @@ services:
       MESSAGE_CONTENT: "123456789"
       KAFKA_SSL_TRUSTSTORE_LOCATION: /var/ssl/private/truststore/kafka.truststore.jks
       KAFKA_SSL_TRUSTSTORE_PASSWORD: 123456
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
     volumes:
       - "/workspaces/workload-identity-kafka-sasl-oauthbearer/e2e/broker:/var/ssl/private"
     networks: 
@@ -27,6 +28,7 @@ services:
       BOOTSTRAP_SERVERS: "broker:9092"
       KAFKA_SSL_TRUSTSTORE_LOCATION: /var/ssl/private/truststore/kafka.truststore.jks
       KAFKA_SSL_TRUSTSTORE_PASSWORD: 123456
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
     volumes:
       - "/workspaces/workload-identity-kafka-sasl-oauthbearer/e2e/broker:/var/ssl/private"
     networks: 

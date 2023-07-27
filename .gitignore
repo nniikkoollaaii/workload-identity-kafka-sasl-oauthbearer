@@ -33,3 +33,5 @@ kind
 
 **/sa.key
 **/*.secret
+
+**/docker-compose.local.apps.secret.yaml

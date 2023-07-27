@@ -4,6 +4,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
 
 import java.util.Properties;
 import java.util.Timer;
@@ -47,14 +50,19 @@ public class Main {
 
 
         // Create the Kafka producer
-        Producer<String, String> producer = new KafkaProducer<>(props);
+        String avroSchemaString = "{\"type\": \"record\", \"name\": \"ExampleRecord\", \"fields\": [{\"name\": \"content\", \"type\": \"string\"}]}";
+        Schema.Parser parser = new Schema.Parser();
+        Schema avroSchema = parser.parse(avroSchemaString);
+
+        Producer<String, GenericRecord> producer = new KafkaProducer<>(props);
 
 
         String event = System.getenv("MESSAGE_CONTENT");
 
         // Publish the event to the Kafka topic
         String key = "1";
-        DataRecordAvro record = new DataRecordAvro(event);
+        GenericRecord record = new GenericData.Record(avroSchema);
+        record.put("content", event);
 
         System.out.printf("Producing record: %s\t%s%n", key, record);
         producer.send(new ProducerRecord<>(TOPIC_NAME, key, record), (m, e) -> {

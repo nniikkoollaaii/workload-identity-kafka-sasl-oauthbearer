@@ -4,7 +4,7 @@
 
     <groupId>io.github.nniikkoollaaii</groupId>
     <artifactId>kafka-sasl-oauthbearer-workload-identity</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Kafka Client Login Callback Handler to be used in Kafka Clients authenticating to an OAuth2 enabled Kafka Broker AND running on an Azure Service with Workload Identity enabled.</description>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-schema-registry-client</artifactId>
-            <version>7.5.0</version>
+            <version>7.4.0</version> <!-- 7.5.0 -->
         </dependency>
     </dependencies>
 
@@ -84,27 +84,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                    <id>sign-artifacts</id>
-                    <phase>verify</phase>
-                    <goals>
-                        <goal>sign</goal>
-                    </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- Prevent gpg from using pinentry programs -->
-                    <gpgArguments>
-                        <arg>--pinentry-mode</arg>
-                        <arg>loopback</arg>
-                    </gpgArguments>
-                </configuration>
-            </plugin>
+            
         </plugins>
     </build>
 

@@ -26,9 +26,10 @@ services:
       KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT,TOKEN:SASL_SSL
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,TOKEN:SASL_SSL
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,TOKEN://broker:9092
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
 
       # Configure custom Truststore when using SASL_SSL between broker and client
       KAFKA_SSL_TRUSTSTORE_LOCATION: /var/ssl/private/truststore/kafka.truststore.jks
@@ -47,13 +48,13 @@ services:
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN, OAUTHBEARER
 
 
-      KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
-      KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
-              org.apache.kafka.common.security.plain.PlainLoginModule required \
-              username="admin" \
-              password="admin-secret" \
-              user_admin="admin-secret" \
-              user_mds="mds-secret";
+      # KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
+      # KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
+      #         org.apache.kafka.common.security.plain.PlainLoginModule required \
+      #         username="admin" \
+      #         password="admin-secret" \
+      #         user_admin="admin-secret" \
+      #         user_mds="mds-secret";
 
       # OAuth Configuration
       KAFKA_LISTENER_NAME_TOKEN_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerValidatorCallbackHandler
@@ -66,6 +67,42 @@ services:
     volumes:
       - "{E2E_DIR_PATH}/broker:/var/ssl/private"
 
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.0
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - broker
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    networks: 
+      - kafka-local
+
+  oauth2-proxy:
+    container_name: oauth2-proxy
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
+    environment: 
+      OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
+      OAUTH2_PROXY_UPSTREAM: "http://schema-registry:8081/"
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_OIDC_ISSUER_URL: https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity
+      #OAUTH2_PROXY_OIDC_JWKS_URL: https://login.microsoftonline.com/f3292839-9228-4d56-a08c-6023c5d71e65/discovery/v2.0/keys
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_COOKIE_SECRET: "OQINaROshtE9TcZkNAm-5Zs2Pv3xaWytBmc5W7sPX7w=" 
+      OAUTH2_PROXY_CLIENT_ID: "12345" 
+      OAUTH2_PROXY_CLIENT_SECRET: "54321" 
+      OAUTH2_PROXY_COOKIE_SECURE: "false"
+    ports:
+      - 4180:4180/tcp
+    hostname: oauth2-proxy
+    restart: unless-stopped
+    networks:
+      - kafka-local
 
 networks: 
   kafka-local:
