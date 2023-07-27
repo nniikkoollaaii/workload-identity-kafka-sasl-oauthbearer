@@ -9,12 +9,19 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
+    <parent>
+      <groupId>io.confluent</groupId>
+      <artifactId>rest-utils-parent</artifactId>
+      <version>7.3.3</version>
+    </parent>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mainClass>io.github.nniikkoollaaii.Main</mainClass>
-        <slf4j-api.version>1.7.6</slf4j-api.version>
+        <avro.version>1.11.1</avro.version>
+        <io.confluent.schema-registry.version>${confluent.version.range}</io.confluent.schema-registry.version>
     </properties>
 
     <dependencies>
@@ -29,7 +36,17 @@
         <dependency>
             <groupId>io.github.nniikkoollaaii</groupId>
             <artifactId>kafka-sasl-oauthbearer-workload-identity</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+          <groupId>io.confluent</groupId>
+          <artifactId>kafka-avro-serializer</artifactId>
+          <version>${io.confluent.schema-registry.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+          <version>${avro.version}</version>
         </dependency>
 
 <!--
@@ -50,6 +67,15 @@
         </dependency>
     </dependencies>
 
+
+
+    <repositories>
+        <repository>
+            <id>confluent</id>
+            <name>Confluent</name>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
 
 
     <build>

@@ -3,6 +3,7 @@ package io.github.nniikkoollaaii;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 
 import java.util.Properties;
 import java.util.Timer;
@@ -17,8 +18,9 @@ public class Main {
         // Kafka producer configuration
         Properties props = new Properties();
         props.put("bootstrap.servers", System.getenv("BOOTSTRAP_SERVERS"));
+        props.put("schema.registry.url", System.getenv("SCHEMA_REGISTRY_URL"));
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", KafkaAvroSerializer.class);
         
         //Use custom truststore in local setup
         props.put("ssl.truststore.location", System.getenv("KAFKA_SSL_TRUSTSTORE_LOCATION"));
@@ -39,6 +41,11 @@ public class Main {
         props.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;");
         props.put("sasl.login.callback.handler.class", "io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.WorkloadIdentityLoginCallbackHandler");
 
+        props.put("bearer.auth.logical.cluster", "123456");
+        props.put("bearer.auth.credentials.source", "WORKLOAD_IDENTITY_OAUTHBEARER");
+        props.put("bearer.auth.custom.provider.class", "io.github.nniikkoollaaii.kafka.bearerauth.workload_identity.WorkloadIdentityBearerAuthCredentialProvider");
+
+
         // Create the Kafka producer
         Producer<String, String> producer = new KafkaProducer<>(props);
 
@@ -46,7 +53,19 @@ public class Main {
         String event = System.getenv("MESSAGE_CONTENT");
 
         // Publish the event to the Kafka topic
-        producer.send(new ProducerRecord<>(TOPIC_NAME, event));
+        String key = "1";
+        DataRecordAvro record = new DataRecordAvro(event);
+
+        System.out.printf("Producing record: %s\t%s%n", key, record);
+        producer.send(new ProducerRecord<>(TOPIC_NAME, key, record), (m, e) -> {
+        if (e != null) {
+            e.printStackTrace();
+        } else {
+            System.out.printf("Produced record to topic %s partition [%d] @ offset %d%n", m.topic(), m.partition(), m.offset());
+        }
+        });
+
+
         producer.flush();
         System.out.println("Published event: " + event);
 

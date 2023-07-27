@@ -77,43 +77,10 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
         moduleOptions = JaasOptionsUtils.getOptions(saslMechanism, jaasConfigEntries);
 
         // Construct a WorkloadIdentityCredential object from Azure Identity SDK
-        String federatedTokeFilePath = System.getenv(WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE);
-        if (federatedTokeFilePath == null || federatedTokeFilePath.equals(""))
-            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE));
-        log.debug("Config: Federated Token File Path " + federatedTokeFilePath);
-        
-        String authorityHost = System.getenv(WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST);
-        if (authorityHost == null || authorityHost.equals(""))
-            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST));
-            log.debug("Config: Authority host " + authorityHost);
-        
-        String tenantId = System.getenv(WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID);
-        if (tenantId == null || tenantId.equals(""))
-            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID));
-            log.debug("Config: Tenant Id " + tenantId);
-        
-        String clientId = System.getenv(WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID);
-        if (clientId == null || clientId.equals(""))
-            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityConstants.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID));
-            log.debug("Config: Client Id " + clientId);
-        
-        
-        workloadIdentityCredential = new WorkloadIdentityCredentialBuilder()
-                .tokenFilePath(federatedTokeFilePath)
-                .authorityHost(authorityHost)
-                .clientId(clientId)
-                .tenantId(tenantId)
-                .build();
+        this.workloadIdentityCredential = WorkloadIdentityUtils.createWorkloadIdentityCredentialFromEnvironment();
 
-
-        //Construct a TokenRequestContext to be used be requsting a token at runtime.
-        //ToDo: make Scope configurable to get access token for e.g. App Registration Kafka Cluster
-        String defaultScope =  clientId + "/.default";
-        log.debug("Config: Scope " + defaultScope);
-        tokenRequestContext = new TokenRequestContext() // TokenRequestContext: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/TokenRequestContext.java
-                .addScopes(defaultScope)
-                .setTenantId(tenantId);
-
+        // and construct a TokenRequestContext object from Azure Identity SDK
+        this.tokenRequestContext = WorkloadIdentityUtils.createTokenRequestContextFromEnvironment();
                 
         isInitialized = true;
     }
@@ -148,9 +115,9 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
         }
     }
 
-    private void handleTokenCallback(OAuthBearerTokenCallback callback) throws IOException {
+    private void handleTokenCallback(OAuthBearerTokenCallback callback) {
+        log.debug("handleTokenCallback - get Token from AzureAD");
         checkInitialized();
-        log.trace("handleTokenCallback - get Token from AzureAD");
 
         // AccessToken https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/AccessToken.java
         AccessToken azureIdentityAccessToken = workloadIdentityCredential.getTokenSync(tokenRequestContext);
