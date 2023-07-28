@@ -89,6 +89,9 @@ https://docs.confluent.io/platform/current/installation/docker/image-reference.h
 https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html#mutating-admission-webhook
 
 
+  docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
+  kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
+
   helm repo add azure-workload-identity https://azure.github.io/azure-workload-identity/charts
   helm repo update
   helm install workload-identity-webhook azure-workload-identity/workload-identity-webhook \
@@ -100,8 +103,6 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
     -v=5 \
     --devel
 
-  docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
-  kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
 
 
   kubectl logs azure-wi-webhook-controller-manager-7664467bfc-5m2bm -n azure-workload-identity-system

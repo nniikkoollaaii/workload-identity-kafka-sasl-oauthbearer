@@ -15,10 +15,11 @@ spec:
       - name: BOOTSTRAP_SERVERS
         value: "broker:9092"
       - name: MESSAGE_CONTENT
-        value: "{BUILD_NUMBER}"
+        value: "12345"
       - name: KAFKA_SSL_TRUSTSTORE_LOCATION
         value: "/var/ssl/private/truststore/kafka.truststore.jks"
       - name: KAFKA_SSL_TRUSTSTORE_PASSWORD
         value: "123456"
       - name: SCHEMA_REGISTRY_URL
+        #value: "http://oauth2-proxy:4180"
         value: "http://schema-registry:8081"

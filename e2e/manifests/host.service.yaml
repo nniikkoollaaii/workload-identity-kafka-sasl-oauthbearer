@@ -50,4 +50,29 @@ spec:
       appProtocol: tcp
       port: 8081
       targetPort: 8081
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: oauth2-proxy
+  namespace: test
+subsets:
+  - addresses:
+      - ip: 172.17.0.1 # docker0 bridge ip
+    ports:
+      - appProtocol: tcp
+        port: 4180
+        protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: test
+spec:
+  ports:
+    - protocol: TCP
+      appProtocol: tcp
+      port: 4180
+      targetPort: 4180
   
