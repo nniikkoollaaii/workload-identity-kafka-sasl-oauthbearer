@@ -49,6 +49,14 @@ kubectl get pods -A
 kubectl logs --selector=azure-workload-identity.io/system=true -n azure-workload-identity-system
 
 echo ""
+echo "Create Schema in schema registry"
+echo ""
+curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+    --data '{"schema": "{\"type\": \"record\", \"name\": \"ExampleRecord\", \"fields\": [{\"name\": \"content\", \"type\": \"string\"}]}"}' \
+    http://localhost:8081/subjects/nniikkoollaaii.topic-value/versions
+
+
+echo ""
 echo "Build producer"
 echo ""
 cd test-producer
