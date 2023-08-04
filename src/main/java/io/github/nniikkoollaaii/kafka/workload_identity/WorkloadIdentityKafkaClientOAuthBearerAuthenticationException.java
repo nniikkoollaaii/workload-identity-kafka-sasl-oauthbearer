@@ -1,4 +1,4 @@
-package io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils;
+package io.github.nniikkoollaaii.kafka.workload_identity;
 
 /**
  * Custom runtime exception to signal errors when using Workload Identity to fetch a token from AzureAD.

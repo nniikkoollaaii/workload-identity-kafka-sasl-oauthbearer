@@ -49,6 +49,14 @@ kubectl get pods -A
 kubectl logs --selector=azure-workload-identity.io/system=true -n azure-workload-identity-system
 
 echo ""
+echo "Create Schema in schema registry"
+echo ""
+curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+    --data '{"schema": "{\"type\": \"record\", \"name\": \"ExampleRecord\", \"fields\": [{\"name\": \"content\", \"type\": \"string\"}]}"}' \
+    http://localhost:8081/subjects/nniikkoollaaii.topic-value/versions
+
+
+echo ""
 echo "Build producer"
 echo ""
 cd test-producer
@@ -111,7 +119,7 @@ kubectl logs test-consumer -n test > result-logs.txt
 echo ""
 echo "Checking results ..."
 echo ""
-if [[ "$(cat result-logs.txt | grep "Received")" != "Received event: $BUILD_NUMBER" ]]; then
+if [[ "$(cat result-logs.txt | grep "Received")" != "Received event: {\"content\": \"$BUILD_NUMBER\"}" ]]; then
   echo "Did not find expected result in log file"; exit 1;
 fi
 echo "Success!"

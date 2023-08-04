@@ -41,11 +41,24 @@ https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/openid
 
   az ad app federated-credential create --id ${APPLICATION_OBJECT_ID} --parameters @params.json
 
+### Install KinD and kubectl binaries
+
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
+
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
 
 ### Create KIND cluster
 
 ```
-./kind create cluster --image kindest/node:v1.24.0 --config kind.local.config
+kind create cluster --image kindest/node:v1.24.0 --config kind.local.config
 ```
 
 
@@ -76,6 +89,9 @@ https://docs.confluent.io/platform/current/installation/docker/image-reference.h
 https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html#mutating-admission-webhook
 
 
+  docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
+  kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
+
   helm repo add azure-workload-identity https://azure.github.io/azure-workload-identity/charts
   helm repo update
   helm install workload-identity-webhook azure-workload-identity/workload-identity-webhook \
@@ -87,11 +103,18 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
     -v=5 \
     --devel
 
-  docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
-  ./kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.0
 
 
   kubectl logs azure-wi-webhook-controller-manager-7664467bfc-5m2bm -n azure-workload-identity-system
+
+### Schema Registry
+
+  curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+    --data '{"schema": "{\"type\": \"record\", \"name\": \"ExampleRecord\", \"fields\": [{\"name\": \"content\", \"type\": \"string\"}]}"}' \
+    http://localhost:8081/subjects/nniikkoollaaii.topic-value/versions
+
+    Test:
+    curl http://localhost:8081/subjects
 
 ## Test producer
 
@@ -101,9 +124,7 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
 
   docker build -t io.github.nniikkoollaaii.kafka-producer-app:1.0.0 .
 
-  cd ..
-
-  ./kind load docker-image io.github.nniikkoollaaii.kafka-producer-app:1.0.0
+  kind load docker-image io.github.nniikkoollaaii.kafka-producer-app:1.0.0
 
 
 ## Test consumer
@@ -114,9 +135,13 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
 
   docker build -t io.github.nniikkoollaaii.kafka-consumer-app:1.0.0 .
 
-  cd ..
+  kind load docker-image io.github.nniikkoollaaii.kafka-consumer-app:1.0.0
 
-  ./kind load docker-image io.github.nniikkoollaaii.kafka-consumer-app:1.0.0
+## Test Schema Registry AuthN
+
+  cd schema-registry-authn
+
+  docker build -t io.github.nniikkoollaaii.schema-registry-authn:1.0.0 .
 
 ## Run Consumer and producer
 
@@ -124,3 +149,7 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
 
   kubectl logs -f test-producer -n test
   kubectl logs -f test-consumer -n test
+
+## Run Consumer and producer locally
+
+docker-compose -f docker-compose.yaml -f docker-compose.local.yaml -f docker-compose.local.apps.yaml -f docker-compose.local.apps.secret.yaml  up -d

@@ -18,3 +18,6 @@ spec:
         value: "/var/ssl/private/truststore/kafka.truststore.jks"
       - name: KAFKA_SSL_TRUSTSTORE_PASSWORD
         value: "123456"
+      - name: SCHEMA_REGISTRY_URL
+        #value: "http://schema-registry-gateway:8080"
+        value: "http://schema-registry:8081"
