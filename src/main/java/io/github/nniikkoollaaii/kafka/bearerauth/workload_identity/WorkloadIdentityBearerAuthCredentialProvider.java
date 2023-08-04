@@ -22,7 +22,6 @@ import java.util.Map;
  * <pre>   
  * // Use Workload Identity 
  * props.put("bearer.auth.credentials.source", "WORKLOAD_IDENTITY_OAUTHBEARER");
- * props.put("bearer.auth.custom.provider.class", "io.github.nniikkoollaaii.kafka.bearerauth.workload_identity.WorkloadIdentityBearerAuthCredentialProvider");
  * 
  * </pre>
  */
