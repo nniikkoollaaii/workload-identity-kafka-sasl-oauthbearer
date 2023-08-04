@@ -2,6 +2,10 @@ package io.github.nniikkoollaaii.schemaregistryauthn;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import org.springframework.context.annotation.Bean;
+
 
 @SpringBootApplication
 public class SchemaRegistryAuthnApplication {
@@ -13,7 +17,7 @@ public class SchemaRegistryAuthnApplication {
 	@Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("schema_registry", r -> r.path("/**")
+                .route("schema_registry", r -> r.path("/subjects/**")
                         .uri("http://schema-registry:8081"))
                 .build();
     }

@@ -1,13 +1,16 @@
-FROM eclipse-temurin:17-jre
-
-# Set the working directory in the container
+# Stage 1: Build the Maven application
+FROM maven:3.8.4-openjdk-17-slim AS build
 WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Copy the JAR file from the target folder of the host to the working directory in the container
-COPY target/gateway-application.jar /app/
+COPY src ./src
+RUN mvn package
 
-# Expose the port that the Spring Cloud Gateway application listens on
+# Stage 2: Create a minimal runtime image
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/schema-registry-authn-1.0.0.jar .
+
 EXPOSE 8080
-
-# Command to run the Spring Cloud Gateway application when the container starts
-CMD ["java", "-jar", "gateway-application.jar"]
+CMD ["java", "-jar", "schema-registry-authn-1.0.0.jar"]

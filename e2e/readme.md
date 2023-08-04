@@ -137,6 +137,12 @@ https://azure.github.io/azure-workload-identity/docs/installation/mutating-admis
 
   kind load docker-image io.github.nniikkoollaaii.kafka-consumer-app:1.0.0
 
+## Test Schema Registry AuthN
+
+  cd schema-registry-authn
+
+  docker build -t io.github.nniikkoollaaii.schema-registry-authn:1.0.0 .
+
 ## Run Consumer and producer
 
   kubectl apply -f manifests/
