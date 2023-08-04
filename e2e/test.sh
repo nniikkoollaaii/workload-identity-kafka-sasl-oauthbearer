@@ -119,7 +119,7 @@ kubectl logs test-consumer -n test > result-logs.txt
 echo ""
 echo "Checking results ..."
 echo ""
-if [[ "$(cat result-logs.txt | grep "Received")" != "Received event: $BUILD_NUMBER" ]]; then
+if [[ "$(cat result-logs.txt | grep "Received")" != "Received event: {\"content\": \"$BUILD_NUMBER\"}" ]]; then
   echo "Did not find expected result in log file"; exit 1;
 fi
 echo "Success!"
