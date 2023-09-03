@@ -16,13 +16,13 @@ sleep 10s
 echo ""
 echo "Install Admission Webhook Controller in KinD cluster"
 echo ""
-docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.1
-kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.1
+docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.2
+kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.2
 export AZURE_TENANT_ID="f3292839-9228-4d56-a08c-6023c5d71e65"
 
 #export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD"
 # not working as AZURE_ENVIRONMENT get not replaced
-#curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1.1/azure-wi-webhook.yaml | envsubst | kubectl apply -f -
+#curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1.2/azure-wi-webhook.yaml | envsubst | kubectl apply -f -
 
 
 
