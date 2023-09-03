@@ -123,6 +123,8 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
         AccessToken azureIdentityAccessToken = workloadIdentityCredential.getTokenSync(tokenRequestContext);
 
         OAuthBearerToken token = AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.map(azureIdentityAccessToken);
+        
+        log.trace("got token from AzureAD: '" + azureIdentityAccessToken.getToken() + "'");
 
         try {
             callback.token(token);

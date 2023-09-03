@@ -44,13 +44,14 @@ public class WorkloadIdentityBearerAuthCredentialProvider implements BearerAuthC
 
     @Override
     public String getBearerToken(URL url) {
-        log.debug("getBearerToken - get Token from AzureAD");
+        log.debug("Get Token from AzureAD");
         checkInitialized();
 
         // AccessToken https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/AccessToken.java
         AccessToken azureIdentityAccessToken = workloadIdentityCredential.getTokenSync(tokenRequestContext);
-
-        return azureIdentityAccessToken.getToken();
+        String token = azureIdentityAccessToken.getToken();
+        log.trace("Got token from AzureAD: '" + token + "'");
+        return token;
     }
 
     @Override
