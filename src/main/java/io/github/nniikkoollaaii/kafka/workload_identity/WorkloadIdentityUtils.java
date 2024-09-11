@@ -59,6 +59,9 @@ public class WorkloadIdentityUtils {
                 return workloadIdentityCredential;
         }
 
+        public static DefaultAzureCredential createDefaultAzureCredential(DefaultAzureCredentialOptions defaultAzureCredentialOptions) {
+                return new DefaultAzureCredential(defaultAzureCredentialOptions);
+        }
 
         public static TokenRequestContext createTokenRequestContextFromEnvironment() {
 
