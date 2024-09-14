@@ -54,9 +54,9 @@ public class Main {
         props.put("sasl.login.callback.handler.class", "io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.WorkloadIdentityLoginCallbackHandler");
 
         props.put("bearer.auth.logical.cluster", "123456");
-        props.put("bearer.auth.credentials.source", "WORKLOAD_IDENTITY_OAUTHBEARER");
+        props.put("bearer.auth.credentials.source", "CUSTOM");
         props.put("bearer.auth.custom.provider.class", "io.github.nniikkoollaaii.kafka.bearerauth.workload_identity.WorkloadIdentityBearerAuthCredentialProvider");
-
+        
 
         // Create the Kafka consumer
         Consumer<String, GenericRecord> consumer = new KafkaConsumer<>(props);

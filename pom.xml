@@ -42,7 +42,7 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-schema-registry-client</artifactId>
-            <version>7.4.0</version> <!-- 7.5.0 -->
+            <version>7.8.0</version> <!-- 7.5.0 -->
         </dependency>
     </dependencies>
 

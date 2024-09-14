@@ -18,16 +18,18 @@ import java.util.Map;
  * ...
  * 
  * <pre>   
- * // Use Workload Identity 
+ * // Use DefaultAzureCredential to support local environment workflows 
  * props.put("bearer.auth.credentials.source", "CUSTOM");
- * props.put("bearer.auth.custom.provider.class", "io.github.nniikkoollaaii.kafka.bearerauth.workload_identity.WorkloadIdentityBearerAuthCredentialProvider");
+ * props.put("bearer.auth.custom.provider.class", "io.github.nniikkoollaaii.kafka.bearerauth.workload_identity.DefaultAzureCredentialBearerAuthCredentialProvider");
  * 
  * </pre>
  */
-public class WorkloadIdentityBearerAuthCredentialProvider extends AbstractTokenCredentialBearerAuthCredentialProvider {
-    
+public class DefaultAzureCredentialBearerAuthCredentialProvider extends AbstractTokenCredentialBearerAuthCredentialProvider {
+    /**
+     * override this method in a subclass if you want to provide a custom 
+     */
     @Override
     protected TokenCredential constructTokenCredential() {
-        return WorkloadIdentityUtils.createWorkloadIdentityCredentialFromEnvironment();
+        return WorkloadIdentityUtils.createDefaultAzureCredential(null);
     }
 }

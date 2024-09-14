@@ -3,6 +3,10 @@ package io.github.nniikkoollaaii.kafka.workload_identity;
 import com.azure.core.credential.TokenRequestContext;
 import com.azure.identity.WorkloadIdentityCredential;
 import com.azure.identity.WorkloadIdentityCredentialBuilder;
+import com.azure.identity.TokenCredential;
+
+import com.azure.identity.DefaultAzureCredential;
+import com.azure.identity.DefaultAzureCredentialOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -13,8 +13,21 @@ Configure this Kafka Client Login Callback Handler to be used by setting
 
 ```
 sasl.login.callback.handler.class=io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.WorkloadIdentityLoginCallbackHandler
+
+bearer.auth.credentials.source=CUSTOM
+bearer.auth.custom.provider.class=io.github.nniikkoollaaii.kafka.bearerauth.workload_identity.WorkloadIdentityBearerAuthCredentialProvider 
 ```
 
+## v2 Migration Guide
+
+v2 of this Lib is using the "CUSTOM" BearerAuthCredentialProvider implementation so change your config from
+
+    bearer.auth.credentials.source=WORKLOAD_IDENTITY_OAUTHBEARER
+
+to
+
+    bearer.auth.credentials.source=CUSTOM
+    bearer.auth.custom.provider.class=io.github.nniikkoollaaii.kafka.bearerauth.workload_identity.WorkloadIdentityBearerAuthCredentialProvider 
 
 
 ## Testing 
