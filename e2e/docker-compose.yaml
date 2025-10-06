@@ -2,33 +2,37 @@ version: '3.7'
 
 services:
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.9.0
-    container_name: zookeeper
-    networks: 
-      - kafka-local
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-  
-  
   broker:
-    image: confluentinc/cp-kafka:7.9.0
+    image: confluentinc/cp-kafka:8.0.0
     container_name: broker
     networks: 
       - kafka-local
-    depends_on:
-      - zookeeper
     ports:
       - "9092:9092"
     environment:
-      KAFKA_BROKER_ID: 1
+      # Enable KRaft (replaces Zookeeper)
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@broker:29093"
+      CLUSTER_ID: z5Q_VF3DThqCfPz_Hvk8RA # Generate using docker docker run -it --rm confluentinc/cp-kafka kafka-storage random-uuid
+
+      # Listeners
+      KAFKA_LISTENERS: INTERNAL://broker:29092,TOKEN://broker:9092,CONTROLLER://broker:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,TOKEN://broker:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,TOKEN:SASL_SSL,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Metadata Topics
       KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,TOKEN:SASL_SSL
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,TOKEN://broker:9092
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # Logs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+
+      # Schema Registry
       KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
 
       # Configure custom Truststore when using SASL_SSL between broker and client
@@ -69,7 +73,7 @@ services:
 
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.9.0
+    image: confluentinc/cp-schema-registry:8.0.0
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
