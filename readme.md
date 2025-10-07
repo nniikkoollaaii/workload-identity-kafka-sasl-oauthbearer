@@ -45,6 +45,10 @@ Published to KeyServer:
 - https://keys.openpgp.org/search?q=A94FE42A09D210C8038CDEDECA796C3D12730018
 - https://keyserver.ubuntu.com/pks/lookup?search=A94FE42A09D210C8038CDEDECA796C3D12730018&fingerprint=on&op=index
 
+Result:
+- Maven Central Publish Status: https://central.sonatype.com/publishing/deployments
+- Maven Central Index: https://repo1.maven.org/maven2/io/github/nniikkoollaaii/kafka-sasl-oauthbearer-workload-identity/
+
 
 
 
