@@ -40,3 +40,13 @@ See deploy.yaml Workflow
 HowTo Deploy: https://central.sonatype.org/publish/publish-portal-maven/
 
 HowTo GPG Signing: https://central.sonatype.org/publish/requirements/gpg/#generating-a-key-pair
+
+Published to KeyServer:
+- https://keys.openpgp.org/search?q=A94FE42A09D210C8038CDEDECA796C3D12730018
+- https://keyserver.ubuntu.com/pks/lookup?search=A94FE42A09D210C8038CDEDECA796C3D12730018&fingerprint=on&op=index
+
+
+
+
+
+
