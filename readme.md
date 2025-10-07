@@ -32,3 +32,11 @@ see [here](./e2e/readme.md)
 ## Develop
 
     mvn install
+
+### Publishing to Maven Central
+
+See deploy.yaml Workflow
+
+HowTo Deploy: https://central.sonatype.org/publish/publish-portal-maven/
+
+HowTo GPG Signing: https://central.sonatype.org/publish/requirements/gpg/#generating-a-key-pair
