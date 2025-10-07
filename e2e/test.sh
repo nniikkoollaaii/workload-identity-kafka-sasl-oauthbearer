@@ -4,7 +4,7 @@ echo ""
 echo "Create Kafka cluster"
 echo ""
 sed -i "s|{E2E_DIR_PATH}|$(pwd)|g" ./docker-compose.yaml
-docker-compose -f docker-compose.yaml up -d 
+docker compose -f docker-compose.yaml up -d
 
 echo ""
 echo "Sleep 10s"
