@@ -15,6 +15,7 @@ Configure this Kafka Client Login Callback Handler to be used by setting
 sasl.login.callback.handler.class=io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.WorkloadIdentityLoginCallbackHandler
 ```
 
+Per default in the TokenRequest to EntraId the scope "<clientId>/.default" is used. If you need to configure a custom scope, then configure it's value via the ENV "AZURE_TOKEN_REQUEST_SCOPE".
 
 
 ## Testing 
@@ -48,6 +49,7 @@ Published to KeyServer:
 Result:
 - Maven Central Publish Status: https://central.sonatype.com/publishing/deployments
 - Maven Central Index: https://repo1.maven.org/maven2/io/github/nniikkoollaaii/kafka-sasl-oauthbearer-workload-identity/
+
 
 
 
