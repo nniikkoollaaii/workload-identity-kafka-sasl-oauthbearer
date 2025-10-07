@@ -16,6 +16,7 @@ public class WorkloadIdentityUtils {
         public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST = "AZURE_AUTHORITY_HOST";
         public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID = "AZURE_TENANT_ID";
         public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID = "AZURE_CLIENT_ID";
+        public static final String AZURE_AD_WORKLOAD_IDENTITY_ENV_TOKEN_REQUEST_SCOPE = "AZURE_TOKEN_REQUEST_SCOPE";
 
 
         public static String getTenantId() {
@@ -32,6 +33,20 @@ public class WorkloadIdentityUtils {
                         throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID));
                 log.debug("Config: Client Id " + clientId);
                 return clientId;
+        }
+
+        
+        public static String getTokenRequestScope() {
+                String scope = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_ENV_TOKEN_REQUEST_SCOPE);
+                if (scope == null || scope.equals("")) {
+                        String clientId = getClientId();
+                        String defaultScope = clientId + "/.default"
+                        log.debug("Config: Scope: Fallback to default " + defaultScope);
+                        return defaultScope;
+                }
+
+                log.debug("Config: Scope " + scope);
+                return scope;
         }
 
         public static WorkloadIdentityCredential createWorkloadIdentityCredentialFromEnvironment() {
@@ -63,14 +78,12 @@ public class WorkloadIdentityUtils {
         public static TokenRequestContext createTokenRequestContextFromEnvironment() {
 
                 String tenantId = getTenantId(); 
-                String clientId = getClientId();
+                String scope    = getTokenRequestScope();
+
 
                 //Construct a TokenRequestContext to be used be requsting a token at runtime.
-                //ToDo: make Scope configurable to get access token for e.g. App Registration Kafka Cluster
-                String defaultScope =  clientId + "/.default";
-                log.debug("Config: Scope " + defaultScope);
                 TokenRequestContext tokenRequestContext = new TokenRequestContext() // TokenRequestContext: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/TokenRequestContext.java
-                        .addScopes(defaultScope)
+                        .addScopes(scope)
                         .setTenantId(tenantId);
 
                 return tokenRequestContext;
