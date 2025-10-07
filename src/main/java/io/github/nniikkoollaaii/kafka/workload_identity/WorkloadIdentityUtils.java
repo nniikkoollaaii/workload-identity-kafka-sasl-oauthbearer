@@ -40,7 +40,7 @@ public class WorkloadIdentityUtils {
                 String scope = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_ENV_TOKEN_REQUEST_SCOPE);
                 if (scope == null || scope.equals("")) {
                         String clientId = getClientId();
-                        String defaultScope = clientId + "/.default"
+                        String defaultScope = clientId + "/.default";
                         log.debug("Config: Scope: Fallback to default " + defaultScope);
                         return defaultScope;
                 }
@@ -78,7 +78,7 @@ public class WorkloadIdentityUtils {
         public static TokenRequestContext createTokenRequestContextFromEnvironment() {
 
                 String tenantId = getTenantId(); 
-                String scope    = getTokenRequestScope();
+                String scope = getTokenRequestScope();
 
 
                 //Construct a TokenRequestContext to be used be requsting a token at runtime.
