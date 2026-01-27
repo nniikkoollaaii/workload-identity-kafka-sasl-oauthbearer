@@ -4,7 +4,7 @@
 
     <groupId>io.github.nniikkoollaaii</groupId>
     <artifactId>kafka-sasl-oauthbearer-workload-identity</artifactId>
-    <version>4.0.0</version>
+    <version>4.1.1</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Kafka Client Login Callback Handler to be used in Kafka Clients authenticating to an OAuth2 enabled Kafka Broker AND running on an Azure Service with Workload Identity enabled.</description>
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>4.0.0</version>
+            <version>4.1.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.azure/azure-identity -->
         <!-- https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview#azure-identity-client-libraries -->
@@ -53,7 +53,7 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-schema-registry-client</artifactId>
-            <version>8.0.0</version>
+            <version>8.1.1</version>
         </dependency>
     </dependencies>
 

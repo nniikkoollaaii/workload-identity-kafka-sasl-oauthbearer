@@ -4,15 +4,17 @@ package io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity;
 import com.azure.core.credential.AccessToken;
 import com.azure.core.credential.TokenRequestContext;
 import com.azure.identity.WorkloadIdentityCredential;
-import com.azure.identity.WorkloadIdentityCredentialBuilder;
+import io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils.AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper;
+import io.github.nniikkoollaaii.kafka.workload_identity.WorkloadIdentityUtils;
+import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.security.auth.AuthenticateCallbackHandler;
 import org.apache.kafka.common.security.auth.SaslExtensions;
 import org.apache.kafka.common.security.auth.SaslExtensionsCallback;
+import org.apache.kafka.common.security.oauthbearer.JwtValidatorException;
 import org.apache.kafka.common.security.oauthbearer.OAuthBearerToken;
 import org.apache.kafka.common.security.oauthbearer.OAuthBearerTokenCallback;
 import org.apache.kafka.common.security.oauthbearer.internals.OAuthBearerClientInitialResponse;
 import org.apache.kafka.common.security.oauthbearer.internals.secured.JaasOptionsUtils;
-import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,14 +22,10 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.sasl.SaslException;
-import org.apache.kafka.common.config.ConfigException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils.AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper;
-import io.github.nniikkoollaaii.kafka.workload_identity.*;
 
 
 /**
@@ -128,7 +126,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
 
         try {
             callback.token(token);
-        } catch (ValidateException e) {
+        } catch (JwtValidatorException e) {
             log.warn(e.getMessage(), e);
             callback.error("invalid_token", e.getMessage(), null);
         }
