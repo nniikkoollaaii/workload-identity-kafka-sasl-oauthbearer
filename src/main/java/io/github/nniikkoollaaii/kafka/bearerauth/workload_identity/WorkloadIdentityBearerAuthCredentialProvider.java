@@ -1,17 +1,14 @@
 package io.github.nniikkoollaaii.kafka.bearerauth.workload_identity;
 
-import io.confluent.kafka.schemaregistry.client.security.bearerauth.BearerAuthCredentialProvider;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
 import com.azure.core.credential.AccessToken;
 import com.azure.core.credential.TokenRequestContext;
 import com.azure.identity.WorkloadIdentityCredential;
-import com.azure.identity.WorkloadIdentityCredentialBuilder;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
+import io.confluent.kafka.schemaregistry.client.security.bearerauth.BearerAuthCredentialProvider;
+import io.github.nniikkoollaaii.kafka.workload_identity.WorkloadIdentityUtils;
 import org.apache.kafka.common.security.oauthbearer.internals.secured.ConfigurationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.github.nniikkoollaaii.kafka.workload_identity.WorkloadIdentityKafkaClientOAuthBearerAuthenticationException;
-import io.github.nniikkoollaaii.kafka.workload_identity.*;
 
 import java.net.URL;
 import java.util.Map;
@@ -27,15 +24,13 @@ import java.util.Map;
  */
 public class WorkloadIdentityBearerAuthCredentialProvider implements BearerAuthCredentialProvider {
     
+    public static final String SASL_IDENTITY_POOL_CONFIG = "extension_identityPoolId";
     private static final Logger log = LoggerFactory.getLogger(WorkloadIdentityBearerAuthCredentialProvider.class);
-
-    
     private WorkloadIdentityCredential workloadIdentityCredential;
     private TokenRequestContext tokenRequestContext;
     private boolean isInitialized = false;
     private String targetSchemaRegistry;
     private String targetIdentityPoolId;
-    public static final String SASL_IDENTITY_POOL_CONFIG = "extension_identityPoolId";
 
     @Override
     public String alias() {

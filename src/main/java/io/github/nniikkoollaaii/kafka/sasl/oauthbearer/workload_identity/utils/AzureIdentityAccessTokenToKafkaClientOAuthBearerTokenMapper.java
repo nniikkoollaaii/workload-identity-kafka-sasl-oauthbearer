@@ -1,9 +1,9 @@
 package io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.utils;
 
 import com.azure.core.credential.AccessToken;
+import org.apache.kafka.common.security.oauthbearer.JwtValidatorException;
 import org.apache.kafka.common.security.oauthbearer.OAuthBearerToken;
 import org.apache.kafka.common.security.oauthbearer.internals.secured.BasicOAuthBearerToken;
-import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
@@ -16,17 +16,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 
-import static org.apache.kafka.common.security.oauthbearer.internals.secured.LoginAccessTokenValidator.EXPIRATION_CLAIM_NAME;
-import static org.apache.kafka.common.security.oauthbearer.internals.secured.LoginAccessTokenValidator.ISSUED_AT_CLAIM_NAME;
+import static org.apache.kafka.common.security.oauthbearer.ClientJwtValidator.EXPIRATION_CLAIM_NAME;
+import static org.apache.kafka.common.security.oauthbearer.ClientJwtValidator.ISSUED_AT_CLAIM_NAME;
 
 /**
  * Mapper class mapping an {@link com.azure.core.credential.AccessToken} returned by the Azure Identity SDK to an {@link org.apache.kafka.common.security.oauthbearer.internals.secured.BasicOAuthBearerToken} expected by the kafka client sasl {@link org.apache.kafka.common.security.oauthbearer.OAuthBearerTokenCallback}
  */
 public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
 
-    private static final Logger log = LoggerFactory.getLogger(AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.class);
     public static final String scopeClaimName = "scp";
     public static final String subClaimName = "sub";
+    private static final Logger log = LoggerFactory.getLogger(AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.class);
+
     public static OAuthBearerToken map(AccessToken azureIdentityAccessToken){
         // Parse the JWT claims to set required values on Kafka Client OAuthBearer Token Object
         log.trace("Map Azure Identity Access Token to Kafka Client OAuthBearerToken");
@@ -42,7 +43,7 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
         try {
             claims = jwtConsumer.processToClaims(azureIdentityAccessToken.getToken());
         } catch (InvalidJwtException e) {
-            throw new ValidateException(String.format("Could not validate the access token: %s", e.getMessage()), e);
+            throw new JwtValidatorException(String.format("Could not validate the access token: %s", e.getMessage()), e);
         }
         Map<String, Object> payload = claims.getClaimsMap();
 
