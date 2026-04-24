@@ -22,7 +22,6 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.sasl.SaslException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,27 +30,26 @@ import java.util.Map;
 /**
  * This class implements the {@link AuthenticateCallbackHandler} interface of the Kafka client library. This interface is used in kafka clients as a callback handler to authenticate to a kafka broker.
  * This implementation is to be used in environments supporting <a href="https://azure.github.io/azure-workload-identity/docs/introduction.html">AzureAD Workload Identity</a>
- * 
- * It uses the ENV vars set by AzureAD Workload Identity Mutating Admission Webhook (AZURE_FEDERATED_TOKEN_FILE, AZURE_AUTHORITY_HOST), @see <a href="https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html">docs</a>, and the <a href="https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/identity">Azure Identity SDK for Java</a> {@link com.azure.identity.WorkloadIdentityCredential} to get an JWT token from AzureAD 
+ * <p>
+ * It uses the ENV vars set by AzureAD Workload Identity Mutating Admission Webhook (AZURE_FEDERATED_TOKEN_FILE, AZURE_AUTHORITY_HOST), @see <a href="https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html">docs</a>, and the <a href="https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/identity">Azure Identity SDK for Java</a> {@link com.azure.identity.WorkloadIdentityCredential} to get an JWT token from AzureAD
  * to be used in the kafka SASL OAUTHBEARER mechanism to authenticate to the kafka broker.
- * 
+ * <p>
  * Use this implementation like so
- * 
+ *
  * <pre>
  * props.put("security.protocol", "SASL_SSL");
  * props.put("sasl.mechanism", "OAUTHBEARER");
- *   
- * // Use Workload Identity 
+ *
+ * // Use Workload Identity
  * props.put("sasl.jaas.config", "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required;");
  * props.put("sasl.login.callback.handler.class", "io.github.nniikkoollaaii.kafka.sasl.oauthbearer.workload_identity.WorkloadIdentityLoginCallbackHandler");
- * 
+ *
  * </pre>
  */
 public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbackHandler {
 
 
     private static final Logger log = LoggerFactory.getLogger(WorkloadIdentityLoginCallbackHandler.class);
-
 
 
     private static final String EXTENSION_PREFIX = "extension_";
@@ -64,6 +62,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
 
     /**
      * Configure this LoginCallbackHandler
+     *
      * @param configs
      * @param saslMechanism
      * @param jaasConfigEntries
@@ -71,7 +70,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     @Override
     public void configure(Map<String, ?> configs, String saslMechanism, List<AppConfigurationEntry> jaasConfigEntries) {
         log.trace("Starting configuration process for WorkloadIdentityLoginCallbackHandler");
-        
+
         moduleOptions = JaasOptionsUtils.getOptions(saslMechanism, jaasConfigEntries);
 
         // Construct a WorkloadIdentityCredential object from Azure Identity SDK
@@ -79,7 +78,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
 
         // and construct a TokenRequestContext object from Azure Identity SDK
         this.tokenRequestContext = WorkloadIdentityUtils.createTokenRequestContextFromEnvironment();
-                
+
         isInitialized = true;
     }
 
@@ -96,12 +95,12 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     /**
      * Called by the kafka client. The magic happens here ...
      * The token is fetched synchronizly from AzureAD and returned to the callback object
+     *
      * @param callbacks
-     * @throws IOException
      * @throws UnsupportedCallbackException
      */
     @Override
-    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+    public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
         for (Callback callback : callbacks) {
             if (callback instanceof OAuthBearerTokenCallback) {
                 handleTokenCallback((OAuthBearerTokenCallback) callback);
@@ -121,7 +120,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
         AccessToken azureIdentityAccessToken = workloadIdentityCredential.getTokenSync(tokenRequestContext);
 
         OAuthBearerToken token = AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.map(azureIdentityAccessToken);
-        
+
         log.trace("got token from AzureAD: '" + azureIdentityAccessToken.getToken() + "'");
 
         try {
@@ -133,7 +132,8 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     }
 
     /**
-     * Code copied and adjusted from https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/common/security/oauthbearer/OAuthBearerLoginCallbackHandler.java
+     * Code copied and adjusted from <a href="https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/common/security/oauthbearer/OAuthBearerLoginCallbackHandler.java">...</a>
+     *
      * @param callback
      */
     private void handleExtensionsCallback(SaslExtensionsCallback callback) {
@@ -156,7 +156,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
 
             extensions.put(key.substring(EXTENSION_PREFIX.length()), value);
         }
-
+        
         SaslExtensions saslExtensions = new SaslExtensions(extensions);
 
         try {
