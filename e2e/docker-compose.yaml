@@ -3,9 +3,9 @@ version: '3.7'
 services:
 
   broker:
-    image: confluentinc/cp-kafka:8.1.1
+    image: confluentinc/cp-kafka:8.2.0
     container_name: broker
-    networks: 
+    networks:
       - kafka-local
     ports:
       - "9092:9092"
@@ -75,7 +75,7 @@ services:
 
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:8.1.1
+    image: confluentinc/cp-schema-registry:8.2.0
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -86,7 +86,7 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-    networks: 
+    networks:
       - kafka-local
 
   # oauth2-proxy:
@@ -148,7 +148,7 @@ services:
   #   restart: unless-stopped
   #   networks:
   #     - kafka-local
-  
 
-networks: 
+
+networks:
   kafka-local:
