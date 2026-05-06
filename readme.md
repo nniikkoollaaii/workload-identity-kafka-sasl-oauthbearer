@@ -38,6 +38,13 @@ see [here](./e2e/readme.md)
 
 See deploy.yaml Workflow
 
+Triggered by creating a new Release:
+- Update the ./pom.xml <version> to the new "<Major.Minor.Patch>" (without "v" prefix)
+- Create a new Release with name "v<Major.Minor.Patch>"
+- Create a tag for the commit (can be done in the Draft Release site) with name v<Major.Minor.Patch>"
+
+#### Additional Infos
+
 HowTo Deploy: https://central.sonatype.org/publish/publish-portal-maven/
 
 HowTo GPG Signing: https://central.sonatype.org/publish/requirements/gpg/#generating-a-key-pair
