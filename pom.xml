@@ -4,10 +4,12 @@
 
     <groupId>io.github.nniikkoollaaii</groupId>
     <artifactId>kafka-sasl-oauthbearer-workload-identity</artifactId>
-    <version>4.1.1</version>
+    <version>4.1.2</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>Kafka Client Login Callback Handler to be used in Kafka Clients authenticating to an OAuth2 enabled Kafka Broker AND running on an Azure Service with Workload Identity enabled.</description>
+    <description>Kafka Client Login Callback Handler to be used in Kafka Clients authenticating to an OAuth2 enabled
+        Kafka Broker AND running on an Azure Service with Workload Identity enabled.
+    </description>
     <url>https://github.com/nniikkoollaaii/workload-identity-kafka-sasl-oauthbearer</url>
 
 
@@ -33,7 +35,7 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>4.1.1</version>
+            <version>4.1.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.azure/azure-identity -->
         <!-- https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview#azure-identity-client-libraries -->
@@ -94,7 +96,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
         </plugins>
     </build>
 
@@ -123,7 +125,7 @@
                                 <id>sign-artifacts</id>
                                 <phase>verify</phase>
                                 <goals>
-                                <goal>sign</goal>
+                                    <goal>sign</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -147,7 +149,7 @@
         </license>
     </licenses>
 
-     <developers>
+    <developers>
         <developer>
             <name>Nikolai Seip</name>
             <email>nikolai.seip@gmail.com</email>
@@ -156,7 +158,8 @@
 
     <scm>
         <connection>scm:git:git://github.com/nniikkoollaaii/workload-identity-kafka-sasl-oauthbearer.git</connection>
-        <developerConnection>scm:git:ssh://github.com:nniikkoollaaii/workload-identity-kafka-sasl-oauthbearer.git</developerConnection>
+        <developerConnection>scm:git:ssh://github.com:nniikkoollaaii/workload-identity-kafka-sasl-oauthbearer.git
+        </developerConnection>
         <url>https://github.com/nniikkoollaaii/workload-identity-kafka-sasl-oauthbearer</url>
     </scm>
 

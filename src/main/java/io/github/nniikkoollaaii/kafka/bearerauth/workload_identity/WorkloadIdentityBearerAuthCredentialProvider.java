@@ -15,15 +15,15 @@ import java.util.Map;
 
 /**
  * ...
- * 
- * <pre>   
- * // Use Workload Identity 
+ *
+ * <pre>
+ * // Use Workload Identity
  * props.put("bearer.auth.credentials.source", "WORKLOAD_IDENTITY_OAUTHBEARER");
- * 
+ *
  * </pre>
  */
 public class WorkloadIdentityBearerAuthCredentialProvider implements BearerAuthCredentialProvider {
-    
+
     public static final String SASL_IDENTITY_POOL_CONFIG = "extension_identityPoolId";
     private static final Logger log = LoggerFactory.getLogger(WorkloadIdentityBearerAuthCredentialProvider.class);
     private WorkloadIdentityCredential workloadIdentityCredential;
@@ -42,11 +42,16 @@ public class WorkloadIdentityBearerAuthCredentialProvider implements BearerAuthC
         log.debug("Get Token from AzureAD");
         checkInitialized();
 
-        // AccessToken https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/AccessToken.java
-        AccessToken azureIdentityAccessToken = workloadIdentityCredential.getTokenSync(tokenRequestContext);
-        String token = azureIdentityAccessToken.getToken();
-        log.trace("Got token from AzureAD: '" + token + "'");
-        return token;
+        try {
+            // AccessToken https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/AccessToken.java
+            AccessToken azureIdentityAccessToken = workloadIdentityCredential.getTokenSync(tokenRequestContext);
+            String token = azureIdentityAccessToken.getToken();
+            log.trace("Got token from AzureAD: '{}'", token);
+            return token;
+        } catch (Exception e) {
+            log.error("Error occurred while processing AzureAD token", e);
+            throw new IllegalStateException("Error occurred while processing AzureAD token", e);
+        }
     }
 
     @Override

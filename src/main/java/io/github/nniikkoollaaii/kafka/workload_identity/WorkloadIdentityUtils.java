@@ -1,88 +1,100 @@
 package io.github.nniikkoollaaii.kafka.workload_identity;
 
 import com.azure.core.credential.TokenRequestContext;
+import com.azure.core.http.policy.ExponentialBackoffOptions;
+import com.azure.core.http.policy.RetryOptions;
 import com.azure.identity.WorkloadIdentityCredential;
 import com.azure.identity.WorkloadIdentityCredentialBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
 public class WorkloadIdentityUtils {
 
-        // ENV vars set by AzureAD Workload Identity Mutating Admission Webhook: https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html
-        public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE = "AZURE_FEDERATED_TOKEN_FILE";
-        public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST = "AZURE_AUTHORITY_HOST";
-        public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID = "AZURE_TENANT_ID";
-        public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID = "AZURE_CLIENT_ID";
-        public static final String AZURE_AD_WORKLOAD_IDENTITY_ENV_TOKEN_REQUEST_SCOPE = "AZURE_TOKEN_REQUEST_SCOPE";
-        private static final Logger log = LoggerFactory.getLogger(WorkloadIdentityUtils.class);
+    // ENV vars set by AzureAD Workload Identity Mutating Admission Webhook: https://azure.github.io/azure-workload-identity/docs/installation/mutating-admission-webhook.html
+    public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE = "AZURE_FEDERATED_TOKEN_FILE";
+    public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST = "AZURE_AUTHORITY_HOST";
+    public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID = "AZURE_TENANT_ID";
+    public static final String AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID = "AZURE_CLIENT_ID";
+    public static final String AZURE_AD_WORKLOAD_IDENTITY_ENV_TOKEN_REQUEST_SCOPE = "AZURE_TOKEN_REQUEST_SCOPE";
+    private static final Logger log = LoggerFactory.getLogger(WorkloadIdentityUtils.class);
 
-        public static String getTenantId() {
-                String tenantId = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID);
-                if (tenantId == null || tenantId.isEmpty())
-                        throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID));
-                log.debug("Config: Tenant Id " + tenantId);
-                return tenantId;
+    public static String getTenantId() {
+        String tenantId = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID);
+        if (tenantId == null || tenantId.isEmpty())
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_TENANT_ID));
+        log.debug("Config: Tenant Id {}", tenantId);
+        return tenantId;
+    }
+
+    public static String getClientId() {
+        String clientId = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID);
+        if (clientId == null || clientId.isEmpty())
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID));
+        log.debug("Config: Client Id {}", clientId);
+        return clientId;
+    }
+
+
+    public static String getTokenRequestScope() {
+        String scope = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_ENV_TOKEN_REQUEST_SCOPE);
+        if (scope == null || scope.isEmpty()) {
+            String clientId = getClientId();
+            String defaultScope = clientId + "/.default";
+            log.debug("Config: Scope: Fallback to default {}", defaultScope);
+            return defaultScope;
         }
 
-        public static String getClientId() {
-                String clientId = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID);
-                if (clientId == null || clientId.isEmpty())
-                        throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_CLIENT_ID));
-                log.debug("Config: Client Id " + clientId);
-                return clientId;
-        }
+        log.debug("Config: Scope {}", scope);
+        return scope;
+    }
 
-        
-        public static String getTokenRequestScope() {
-                String scope = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_ENV_TOKEN_REQUEST_SCOPE);
-                if (scope == null || scope.isEmpty()) {
-                        String clientId = getClientId();
-                        String defaultScope = clientId + "/.default";
-                        log.debug("Config: Scope: Fallback to default " + defaultScope);
-                        return defaultScope;
-                }
+    public static WorkloadIdentityCredential createWorkloadIdentityCredentialFromEnvironment() {
+        String federatedTokeFilePath = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE);
+        if (federatedTokeFilePath == null || federatedTokeFilePath.isEmpty())
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE));
+        log.debug("Config: Federated Token File Path {}", federatedTokeFilePath);
 
-                log.debug("Config: Scope " + scope);
-                return scope;
-        }
+        String authorityHost = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST);
+        if (authorityHost == null || authorityHost.isEmpty())
+            throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST));
+        log.debug("Config: Authority host {}", authorityHost);
 
-        public static WorkloadIdentityCredential createWorkloadIdentityCredentialFromEnvironment() {
-                String federatedTokeFilePath = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE);
-                if (federatedTokeFilePath == null || federatedTokeFilePath.isEmpty())
-                        throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_FEDERATED_TOKEN_FILE));
-                log.debug("Config: Federated Token File Path " + federatedTokeFilePath);
-
-                String authorityHost = System.getenv(WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST);
-                if (authorityHost == null || authorityHost.isEmpty())
-                        throw new WorkloadIdentityKafkaClientOAuthBearerAuthenticationException(String.format("Missing environment variable %s", WorkloadIdentityUtils.AZURE_AD_WORKLOAD_IDENTITY_MUTATING_ADMISSION_WEBHOOK_ENV_AUTHORITY_HOST));
-                log.debug("Config: Authority host " + authorityHost);
-                
-                String tenantId = getTenantId(); 
-                String clientId = getClientId();
+        String tenantId = getTenantId();
+        String clientId = getClientId();
 
 
-                WorkloadIdentityCredential workloadIdentityCredential  = new WorkloadIdentityCredentialBuilder()
-                        .tokenFilePath(federatedTokeFilePath)
-                        .authorityHost(authorityHost)
-                        .clientId(clientId)
-                        .tenantId(tenantId)
-                        .build();
+        WorkloadIdentityCredential workloadIdentityCredential = new WorkloadIdentityCredentialBuilder()
+                .tokenFilePath(federatedTokeFilePath)
+                .authorityHost(authorityHost)
+                .clientId(clientId)
+                .tenantId(tenantId)
+                .retryOptions(
+                        new RetryOptions(
+                                new ExponentialBackoffOptions()
+                                        .setMaxRetries(5)
+                                        .setBaseDelay(Duration.of(1, ChronoUnit.SECONDS))
+                        )
+                )
+                .build();
 
-                return workloadIdentityCredential;
-        }
+        return workloadIdentityCredential;
+    }
 
 
-        public static TokenRequestContext createTokenRequestContextFromEnvironment() {
+    public static TokenRequestContext createTokenRequestContextFromEnvironment() {
 
-                String tenantId = getTenantId(); 
-                String scope = getTokenRequestScope();
+        String tenantId = getTenantId();
+        String scope = getTokenRequestScope();
 
 
-                //Construct a TokenRequestContext to be used be requsting a token at runtime.
-                TokenRequestContext tokenRequestContext = new TokenRequestContext() // TokenRequestContext: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/TokenRequestContext.java
-                        .addScopes(scope)
-                        .setTenantId(tenantId);
+        //Construct a TokenRequestContext to be used be requsting a token at runtime.
+        TokenRequestContext tokenRequestContext = new TokenRequestContext() // TokenRequestContext: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/core/azure-core/src/main/java/com/azure/core/credential/TokenRequestContext.java
+                .addScopes(scope)
+                .setTenantId(tenantId);
 
-                return tokenRequestContext;
-        }
+        return tokenRequestContext;
+    }
 }
