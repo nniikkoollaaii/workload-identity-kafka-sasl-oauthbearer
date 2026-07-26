@@ -28,7 +28,7 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
     public static final String subClaimName = "sub";
     private static final Logger log = LoggerFactory.getLogger(AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper.class);
 
-    public static OAuthBearerToken map(AccessToken azureIdentityAccessToken){
+    public static OAuthBearerToken map(AccessToken azureIdentityAccessToken) {
         // Parse the JWT claims to set required values on Kafka Client OAuthBearer Token Object
         log.trace("Map Azure Identity Access Token to Kafka Client OAuthBearerToken");
 
@@ -39,7 +39,7 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
                 .build();
 
         //Parse it
-        JwtClaims claims =  null;
+        JwtClaims claims;
         try {
             claims = jwtConsumer.processToClaims(azureIdentityAccessToken.getToken());
         } catch (InvalidJwtException e) {
@@ -70,21 +70,19 @@ public class AzureIdentityAccessTokenToKafkaClientOAuthBearerTokenMapper {
         // AzureAD expiry claim: Timestamp in unix epoch Seconds where the token expires -> duration via extration with issuedAt
         //  https://github.com/uglide/azure-content/blob/master/articles/active-directory/active-directory-token-and-claims.md
         // and multiple with 1000 to convert to milliseconds
-        Long lifetimeMs = expirationTimeRaw.longValue() * 1000;
-        
+        long lifetimeMs = expirationTimeRaw.longValue() * 1000;
+
         // When the credential became valid, in terms of the number of milliseconds since the epoch
         // https://github.com/a0x8o/kafka/blob/master/clients/src/main/java/org/apache/kafka/common/security/oauthbearer/secured/BasicOAuthBearerToken.java#L148
-        Long startTimeMs = issuedAtRaw.longValue() * 1000; 
+        long startTimeMs = issuedAtRaw.longValue() * 1000;
 
-
-        // construct an Kafka Client OAuth Bearer Token and return it
-        OAuthBearerToken token = new BasicOAuthBearerToken(
+        // construct a Kafka Client OAuth Bearer Token and return it
+        return new BasicOAuthBearerToken(
                 azureIdentityAccessToken.getToken(),
                 new HashSet<>(scopeRawCollection),
                 lifetimeMs,
                 subRaw,
                 startTimeMs);
-        return token;
     }
 
     private static Object getClaim(Map<String, Object> payload, String claimName) {
