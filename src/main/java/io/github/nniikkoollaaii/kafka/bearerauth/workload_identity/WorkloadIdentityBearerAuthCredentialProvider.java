@@ -23,7 +23,7 @@ import java.util.Map;
  * </pre>
  */
 public class WorkloadIdentityBearerAuthCredentialProvider implements BearerAuthCredentialProvider {
-
+    
     public static final String SASL_IDENTITY_POOL_CONFIG = "extension_identityPoolId";
     private static final Logger log = LoggerFactory.getLogger(WorkloadIdentityBearerAuthCredentialProvider.class);
     private WorkloadIdentityCredential workloadIdentityCredential;

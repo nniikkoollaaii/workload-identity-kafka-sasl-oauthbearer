@@ -134,7 +134,7 @@ public class WorkloadIdentityLoginCallbackHandler implements AuthenticateCallbac
     }
 
     /**
-     * Code copied and adjusted from https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/common/security/oauthbearer/OAuthBearerLoginCallbackHandler.java
+     * Code copied and adjusted from <a href="https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/common/security/oauthbearer/OAuthBearerLoginCallbackHandler.java">...</a>
      *
      * @param callback
      */
