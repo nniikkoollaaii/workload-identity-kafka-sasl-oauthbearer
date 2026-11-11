@@ -5,6 +5,30 @@
 https://azure.github.io/azure-workload-identity/docs/topics/self-managed-clusters/examples/kind.html
 
 
+## Test environment versions
+
+CI uses KinD 0.33.0 with Kubernetes 1.37.0 (node image pinned by digest),
+Helm 4.3.1 and the Workload Identity Helm chart 1.6.1. kubectl matches the
+Kubernetes version. The KinD configuration targets kubeadm v1beta4.
+Producer and consumer containers use Eclipse Temurin 25; the library build
+continues to use JDK 11 to verify its Java compatibility.
+
+## Broker token validation
+
+Kafka 4.4 requires both an expected audience and an expected issuer for OAuth
+JWT validation. The Compose configuration uses the Entra v2 issuer, matching
+the existing Schema Registry gateway configuration. This is the issuer of the
+Entra access token, not the Kubernetes issuer used for workload federation.
+
+The issuer must exactly match the access token's `iss` claim. The resource app's
+`requestedAccessTokenVersion` controls the token format, independently of the
+token endpoint version. For Entra v1 access tokens, override it before running
+the test:
+
+```sh
+export AZURE_TOKEN_ISSUER="https://sts.windows.net/f3292839-9228-4d56-a08c-6023c5d71e65/"
+```
+
 ## Setup
 
 ### ServiceAccount Key Generation
@@ -43,17 +67,17 @@ https://nniikkoollaaii.github.io/kafka-sasl-oauthbearer-workload-identity/openid
 
 ### Install KinD and kubectl binaries
 
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 
 
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/v1.37.0/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
 chmod 700 get_helm.sh
-./get_helm.sh
+DESIRED_VERSION=v4.3.1 ./get_helm.sh
 
 ### Create KIND cluster
 

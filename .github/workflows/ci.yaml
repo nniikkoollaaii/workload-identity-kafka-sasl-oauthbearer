@@ -17,6 +17,10 @@ on:
 
 env:
   KIND_CLUSTER_NAME: "cluster"
+  KIND_VERSION: "v0.33.0"
+  KUBERNETES_VERSION: "v1.37.0"
+  HELM_VERSION: "v4.3.1"
+  WORKLOAD_IDENTITY_CHART_VERSION: "1.6.1"
 
 
 jobs:
@@ -46,28 +50,29 @@ jobs:
           # Copy private key for E2E test to file
           echo "${{ secrets.E2E_SA_KEY_2 }}" > ./e2e/sa.key
           echo "Created file ./e2e/sa.key"
-          
-          
+
+
           echo "Set current dir $(pwd) in kind.config"
           sed -i "s|{E2E_DIR_PATH}|$(pwd)|g" ./e2e/kind.config
-          
+
           echo "KinD Config:"
           cat ./e2e/kind.config
         shell: bash
 
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.7.0
+        uses: helm/kind-action@v1.15.2
         with:
           cluster_name: ${{ env.KIND_CLUSTER_NAME }}
           config: e2e/kind.config
-          #version: 1.24.0
-          #install_only: true
-          #wait: 180s
+          version: ${{ env.KIND_VERSION }}
+          kubectl_version: ${{ env.KUBERNETES_VERSION }}
+          node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+          wait: 180s
 
-      - uses: azure/setup-kubectl@v3
-        name: Install kubectl
-      - uses: azure/setup-helm@v3
+      - uses: azure/setup-helm@v5.1.0
         name: Install helm
+        with:
+          version: ${{ env.HELM_VERSION }}
 
       - name: Run test script
         run: |

@@ -45,7 +45,8 @@ Each Kafka minor version has its own maintenance branch:
 
 | Branch | Purpose | Example release |
 | --- | --- | --- |
-| `main` | Development for the newest supported Kafka minor | `v4.3.1` |
+| `main` | Development for the newest supported Kafka minor | `v4.4.0` |
+| `release/4.4` | Patches for Kafka 4.4.x | `v4.4.1` |
 | `release/4.3` | Patches for Kafka 4.3.x | `v4.3.2` |
 | `release/4.2` | Patches for Kafka 4.2.x | `v4.2.2` |
 

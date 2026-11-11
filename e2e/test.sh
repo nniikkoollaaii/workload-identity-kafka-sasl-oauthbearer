@@ -1,4 +1,20 @@
-cd e2e
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+print_failure_logs() {
+  status=$?
+  trap - ERR
+  echo "E2E failed (exit $status). Container status and logs:"
+  docker compose ps -a || true
+  docker compose logs --no-color --tail=200 broker schema-registry || true
+  kubectl get pods -A || true
+  kubectl logs test-producer -n test --tail=100 || true
+  kubectl logs test-consumer -n test --tail=100 || true
+  exit "$status"
+}
+trap print_failure_logs ERR
 
 echo ""
 echo "Create Kafka cluster"
@@ -7,35 +23,47 @@ sed -i "s|{E2E_DIR_PATH}|$(pwd)|g" ./docker-compose.yaml
 docker compose -f docker-compose.yaml up -d
 
 echo ""
-echo "Sleep 10s"
+echo "Wait for Kafka and Schema Registry (up to 120 seconds)"
 echo ""
-sleep 10s
+ready=false
+for ((attempt = 1; attempt <= 60; attempt++)); do
+  for container in broker schema-registry; do
+    state=$(docker inspect --format '{{.State.Status}}' "$container")
+    if [[ "$state" == exited || "$state" == dead ]]; then
+      echo "$container stopped before becoming ready"
+      false
+    fi
+  done
+  if curl --fail --silent --max-time 2 http://localhost:8081/subjects > /dev/null; then
+    if docker compose exec -T broker kafka-topics --bootstrap-server broker:29092 --list > /dev/null 2>&1; then
+      ready=true
+      break
+    fi
+  fi
+  sleep 2
+done
+if [[ "$ready" != true ]]; then
+  echo "Kafka or Schema Registry did not become ready"
+  false
+fi
 
 
 
 echo ""
 echo "Install Admission Webhook Controller in KinD cluster"
 echo ""
-docker pull mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.2
-kind load docker-image mcr.microsoft.com/oss/azure/workload-identity/webhook:v1.1.2
 export AZURE_TENANT_ID="f3292839-9228-4d56-a08c-6023c5d71e65"
-
-#export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD"
-# not working as AZURE_ENVIRONMENT get not replaced
-#curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1.2/azure-wi-webhook.yaml | envsubst | kubectl apply -f -
-
-
 
 helm repo add azure-workload-identity https://azure.github.io/azure-workload-identity/charts
 helm repo update
 helm install workload-identity-webhook azure-workload-identity/workload-identity-webhook \
   --namespace azure-workload-identity-system \
   --create-namespace \
-  --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65" \
+  --version "${WORKLOAD_IDENTITY_CHART_VERSION:-1.6.1}" \
+  --set azureTenantID="$AZURE_TENANT_ID" \
   --wait --timeout 2m30s\
   --debug \
-  -v=5 \
-  --devel
+  -v=5
 
 # In early pipeline runs the test failed because the Webhook Service was not ready. 
 # Local tests showed it took from "2023-06-13T20:04:14.624230Z to "2023-06-13T20:06:06.372301Z"
@@ -51,7 +79,7 @@ kubectl logs --selector=azure-workload-identity.io/system=true -n azure-workload
 echo ""
 echo "Create Schema in schema registry"
 echo ""
-curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+curl --fail-with-body --show-error -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
     --data '{"schema": "{\"type\": \"record\", \"name\": \"ExampleRecord\", \"fields\": [{\"name\": \"content\", \"type\": \"string\"}]}"}' \
     http://localhost:8081/subjects/nniikkoollaaii.topic-value/versions
 
@@ -120,6 +148,7 @@ echo ""
 echo "Checking results ..."
 echo ""
 if [[ "$(cat result-logs.txt | grep "Received")" != "Received event: {\"content\": \"$BUILD_NUMBER\"}" ]]; then
-  echo "Did not find expected result in log file"; exit 1;
+  echo "Did not find expected result in log file"
+  false
 fi
 echo "Success!"
