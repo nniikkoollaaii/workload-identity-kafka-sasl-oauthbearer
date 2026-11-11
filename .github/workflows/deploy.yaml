@@ -1,14 +1,37 @@
 name: Publish package to the Maven Central Repository
 on:
   release:
-    types: [created]
+    types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag (e.g. v4.2.2)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate release tag
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        shell: bash
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a release tag such as v4.2.2"
+            exit 1
+          fi
       - uses: actions/checkout@v3
+        with:
+          ref: refs/tags/${{ github.event.release.tag_name || inputs.tag }}
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v3
         with:
@@ -20,8 +43,17 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_SIGNING_KEY }} # Value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
 
-      - name: Set version
-        run: mvn versions:set -DnewVersion=${{ github.event.release.tag_name }}
+      - name: Verify release version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        shell: bash
+        run: |
+          version=$(mvn --batch-mode help:evaluate -Dexpression=project.version -q -DforceStdout -Dstyle.color=never)
+          expected="${RELEASE_TAG#v}"
+          if [[ "$version" != "$expected" ]]; then
+            echo "Tag version $expected does not match POM version $version"
+            exit 1
+          fi
       - name: Publish package
         run: mvn --batch-mode deploy -Pdeploy
         env:
