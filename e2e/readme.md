@@ -13,6 +13,22 @@ Kubernetes version. The KinD configuration targets kubeadm v1beta4.
 Producer and consumer containers use Eclipse Temurin 25; the library build
 continues to use JDK 11 to verify its Java compatibility.
 
+## Broker token validation
+
+Kafka 4.4 requires both an expected audience and an expected issuer for OAuth
+JWT validation. The Compose configuration uses the Entra v2 issuer, matching
+the existing Schema Registry gateway configuration. This is the issuer of the
+Entra access token, not the Kubernetes issuer used for workload federation.
+
+The issuer must exactly match the access token's `iss` claim. The resource app's
+`requestedAccessTokenVersion` controls the token format, independently of the
+token endpoint version. For Entra v1 access tokens, override it before running
+the test:
+
+```sh
+export AZURE_TOKEN_ISSUER="https://sts.windows.net/f3292839-9228-4d56-a08c-6023c5d71e65/"
+```
+
 ## Setup
 
 ### ServiceAccount Key Generation
