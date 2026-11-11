@@ -54,22 +54,16 @@ echo "Install Admission Webhook Controller in KinD cluster"
 echo ""
 export AZURE_TENANT_ID="f3292839-9228-4d56-a08c-6023c5d71e65"
 
-#export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD"
-# not working as AZURE_ENVIRONMENT get not replaced
-#curl -sL https://github.com/Azure/azure-workload-identity/releases/download/v1.1.2/azure-wi-webhook.yaml | envsubst | kubectl apply -f -
-
-
-
 helm repo add azure-workload-identity https://azure.github.io/azure-workload-identity/charts
 helm repo update
 helm install workload-identity-webhook azure-workload-identity/workload-identity-webhook \
   --namespace azure-workload-identity-system \
   --create-namespace \
-  --set azureTenantID="f3292839-9228-4d56-a08c-6023c5d71e65" \
+  --version "${WORKLOAD_IDENTITY_CHART_VERSION:-1.6.1}" \
+  --set azureTenantID="$AZURE_TENANT_ID" \
   --wait --timeout 2m30s\
   --debug \
-  -v=5 \
-  --devel
+  -v=5
 
 # In early pipeline runs the test failed because the Webhook Service was not ready. 
 # Local tests showed it took from "2023-06-13T20:04:14.624230Z to "2023-06-13T20:06:06.372301Z"

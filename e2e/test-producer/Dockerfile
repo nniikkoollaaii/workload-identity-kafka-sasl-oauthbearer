@@ -1,5 +1,5 @@
 # Use an appropriate base image with Java support (e.g., AdoptOpenJDK, OpenJDK, etc.)
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:25-jre
 
 # Set the working directory in the container
 WORKDIR /app
